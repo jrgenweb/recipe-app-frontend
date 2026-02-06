@@ -1,0 +1,38 @@
+<div class="gallery row g-2">
+  <!-- Nagy kép -->
+  <div class="col-12 col-lg-10">
+    <div class="ratio ratio-16x9 position-relative">
+      <img
+        [src]="items[activeIndex]?.url || 'https://placehold.co/600x400'"
+        class="img-responsive object-fit-cover w-100 h-100"
+      />
+
+      <!-- overlay gombok -->
+      <button class="nav-btn left" (click)="prev()" [disabled]="activeIndex === 0">
+        <i class="bi bi-caret-left"></i>
+      </button>
+      <button class="nav-btn right" (click)="next()" [disabled]="activeIndex === items.length - 1">
+        <i class="bi bi-caret-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Thumbnail container -->
+  <div class="col-12 col-lg-2">
+    <div class="thumb-wrapper">
+      @for (image of items; track $index) {
+        <div
+          #thumb
+          class="thumb"
+          [class.active]="activeIndex === $index"
+          (click)="setActive($index)"
+        >
+          <img
+            [src]="image.url || 'https://placehold.co/600x400'"
+            class="img-responsive object-fit-cover w-100 h-100"
+          />
+        </div>
+      }
+    </div>
+  </div>
+</div>

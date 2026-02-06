@@ -1,0 +1,46 @@
+@if (isOpen) {
+  <!-- Modal -->
+  <div
+    class="modal fade show d-block"
+    id="modalId"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="confirmModalTitleId"
+    aria-hidden="true"
+    #confirmModal
+  >
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalTitleId">{{ title }}</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+            (click)="onConfirm(false)"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div class="container-fluid">
+            <ng-content></ng-content>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+            (click)="onConfirm(false)"
+          >
+            {{ btnCloseTitle }}
+          </button>
+          <button type="button" class="btn btn-primary" (click)="onConfirm(true)">
+            {{ btnConfirmTitle }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
+}

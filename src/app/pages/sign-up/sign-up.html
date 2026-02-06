@@ -1,0 +1,149 @@
+<div class="register-form mt-5 col-md-8 offset-2">
+  <h2>Regisztráció</h2>
+  @let email = signUpForm.get('email');
+  <!--@let firstname = signUpForm.get('firstname');
+  @let lastname = signUpForm.get('lastname');-->
+  @let name = signUpForm.get('name');
+  @let password = signUpForm.get('password');
+  @let confirmpassword = signUpForm.get('confirmpassword');
+  <form [formGroup]="signUpForm" (ngSubmit)="onSignUp()">
+    <div class="mb-3">
+      <label for="email" class="form-label">Email cím</label>
+      <input
+        type="email"
+        class="form-control"
+        name="email"
+        id="email"
+        formControlName="email"
+        aria-describedby="emailHelpId"
+        placeholder="email@mail.com"
+        [class.is-invalid]="email?.invalid && email?.dirty"
+        [class.is-valid]="email?.valid && email?.dirty"
+      />
+      @if (email?.dirty && email?.invalid) {
+        <small id="emailHelpId" class="form-text text-danger">Érvénytelen email cím</small>
+      }
+    </div>
+
+    <div class="row">
+      <div class="mb-3">
+        <label for="name" class="form-label">Név</label>
+        <input
+          type="text"
+          class="form-control"
+          name="name"
+          id="name"
+          formControlName="name"
+          aria-describedby="nameHelpId"
+          placeholder=""
+          [class.is-invalid]="name?.invalid && name?.dirty"
+          [class.is-valid]="name?.valid && name?.dirty"
+        />
+
+        @if (name?.dirty && name?.invalid) {
+          <small id="lastnameHelpId" class="form-text text-danger"
+            >A vezetéknév megadása kötelező</small
+          >
+        }
+      </div>
+      <!--<div class="col-6">
+        <div class="mb-3">
+          <label for="lastname" class="form-label">Vezetéknév</label>
+          <input
+            type="text"
+            class="form-control"
+            name="lastname"
+            id="lastname"
+            formControlName="lastname"
+            aria-describedby="lastnameHelpId"
+            placeholder=""
+            [class.is-invalid]="lastname?.invalid && lastname?.dirty"
+            [class.is-valid]="lastname?.valid && lastname?.dirty"
+          />
+
+          @if (lastname?.dirty && lastname?.invalid) {
+            <small id="lastnameHelpId" class="form-text text-danger"
+              >A vezetéknév megadása kötelező</small
+            >
+          }
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="mb-3">
+          <label for="firstname" class="form-label">Keresztnév</label>
+          <input
+            type="text"
+            class="form-control"
+            name="firstname"
+            id="firstname"
+            formControlName="firstname"
+            aria-describedby="firstnameHelpId"
+            placeholder=""
+            [class.is-invalid]="firstname?.invalid && firstname?.dirty"
+            [class.is-valid]="firstname?.valid && firstname?.dirty"
+          />
+          @if (firstname?.dirty && firstname?.invalid) {
+            <small id="firstnameHelpId" class="form-text text-danger"
+              >A keresztnév megadása kötelező</small
+            >
+          }
+        </div>
+      </div>-->
+    </div>
+
+    <div class="row">
+      <div class="col-6">
+        <div class="mb-3">
+          <label for="password" class="form-label">Jelszó</label>
+          <input
+            type="password"
+            class="form-control"
+            name="password"
+            id="password"
+            formControlName="password"
+            aria-describedby="passwordHelpId"
+            placeholder=""
+            [class.is-invalid]="password?.invalid && password?.dirty"
+            [class.is-valid]="password?.valid && password?.dirty"
+          />
+          @if (password?.dirty && password?.invalid) {
+            <small id="passwordHelpId" class="form-text text-danger">Hibás jelszó</small>
+          }
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="mb-3">
+          <label for="confirmpassword" class="form-label">Jelszó megerősítése</label>
+          <input
+            type="password"
+            class="form-control"
+            name="confirmpassword"
+            id="confirmpassword"
+            formControlName="confirmpassword"
+            aria-describedby="confirmpasswordHelpId"
+            placeholder=""
+            [class.is-invalid]="
+              (confirmpassword?.invalid && confirmpassword?.dirty) ||
+              signUpForm.getError('passwordMismatch')
+            "
+            [class.is-valid]="confirmpassword?.valid && confirmpassword?.dirty"
+          />
+          @if (confirmpassword?.dirty && confirmpassword?.invalid) {
+            <small id="confirmpasswordHelpId" class="form-text text-danger">Hibás jelszó</small>
+          }
+        </div>
+        @if (signUpForm.hasError('passwordMismatch') && confirmpassword?.dirty) {
+          <small class="text-danger">A jelszavak nem egyeznek</small>
+        }
+      </div>
+    </div>
+
+    <button
+      class="btn btn-lg btn-success mx-auto d-block"
+      type="submit"
+      [disabled]="signUpForm.invalid"
+    >
+      Regisztráció
+    </button>
+  </form>
+</div>

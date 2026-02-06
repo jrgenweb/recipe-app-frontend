@@ -1,0 +1,22 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { AddCategoryModal } from './add-category-modal';
+
+describe('AddModal', () => {
+  let component: AddCategoryModal;
+  let fixture: ComponentFixture<AddCategoryModal>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [AddCategoryModal],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(AddCategoryModal);
+    component = fixture.componentInstance;
+    await fixture.whenStable();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});

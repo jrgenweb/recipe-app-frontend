@@ -1,0 +1,12 @@
+.stars i {
+    cursor: pointer;
+    font-size: 2rem;
+    color: gold;
+    transition: color 0.2s;
+}
+
+.stars i.disabled {
+    cursor: default;
+    pointer-events: none; // teljes hover tiltás
+    opacity: 0.7;
+}

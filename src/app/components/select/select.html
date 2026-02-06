@@ -1,0 +1,15 @@
+<div class="py-3">
+  @for (item of displayItems; track $index) {
+    @if (isSelected(item)) {
+      <span
+        class="badge rounded-pill bg-primary text-light badge-lg fs-6"
+        (click)="onItemClick(item)"
+        >{{ item.label }}</span
+      >
+    } @else {
+      <span class="badge rounded-pill bg-light text-dark fs-6" (click)="onItemClick(item)">{{
+        item.label
+      }}</span>
+    }
+  }
+</div>

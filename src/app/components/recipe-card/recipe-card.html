@@ -1,0 +1,30 @@
+<div class="card">
+  <img
+    class="card-img-top"
+    [src]="recipe.recipeImages[0]?.url || 'https://placehold.co/600x400'"
+    [alt]="recipe.name"
+    [title]="recipe.name"
+    (error)="onImageError($event)"
+  />
+  <div class="card-body">
+    <h4 class="card-title">{{ recipe.name | shortenPipe: 20 }}</h4>
+
+    <app-rating
+      [disabled]="!authService.isLoggedIn()"
+      [avgRate]="recipe.avgRating"
+      [recipeId]="recipe.id"
+      (changeRateEvt)="setRate($event)"
+    >
+    </app-rating>
+    <div class="d-flex gap-2 justify-content-between align-items-center">
+      <app-btn-favorite
+        (changeFavoriteEvt)="setFavorite($event)"
+        [recipeId]="recipe.id"
+        [isFavorite]="isFavorite"
+        [disabled]="!(authService.isLoggedin$ | async)"
+      ></app-btn-favorite>
+
+      <a routerLink="/recipes/{{ recipe.id }}">Megtekintés</a>
+    </div>
+  </div>
+</div>

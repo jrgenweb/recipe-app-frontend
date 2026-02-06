@@ -1,0 +1,101 @@
+<div class="col-md-8 offset-md-2">
+  <h2 class="my-4">Alapadatok megváltoztatása</h2>
+  @let email = generalForm.get('email');
+  <!--@let firstname = generalForm.get('firstname');
+  @let lastname = generalForm.get('lastname');-->
+  @let name = generalForm.get('name');
+
+  <form [formGroup]="generalForm" (ngSubmit)="onEdit()">
+    <div class="mb-3">
+      <label for="email" class="form-label">Email cím</label>
+      <input
+        type="email"
+        class="form-control"
+        name="email"
+        id="email"
+        formControlName="email"
+        aria-describedby="emailHelpId"
+        placeholder="email@mail.com"
+        [class.is-invalid]="email?.invalid && email?.dirty"
+        [class.is-valid]="email?.valid && email?.dirty"
+      />
+      @if (email?.dirty && email?.invalid) {
+        <small id="emailHelpId" class="form-text text-danger">Érvénytelen email cím</small>
+      }
+    </div>
+
+    <div class="row">
+      <div class="mb-3">
+        <label for="name" class="form-label">Név</label>
+        <input
+          type="text"
+          class="form-control"
+          name="name"
+          id="name"
+          formControlName="name"
+          aria-describedby="nameHelpId"
+          placeholder=""
+          [class.is-invalid]="name?.invalid && name?.dirty"
+          [class.is-valid]="name?.valid && name?.dirty"
+        />
+
+        @if (name?.dirty && name?.invalid) {
+          <small id="lastnameHelpId" class="form-text text-danger"
+            >A vezetéknév megadása kötelező</small
+          >
+        }
+      </div>
+      <!--<div class="col-6">
+        <div class="mb-3">
+          <label for="lastname" class="form-label">Vezetéknév</label>
+          <input
+            type="text"
+            class="form-control"
+            name="lastname"
+            id="lastname"
+            formControlName="lastname"
+            aria-describedby="lastnameHelpId"
+            placeholder=""
+            [class.is-invalid]="lastname?.invalid && lastname?.dirty"
+            [class.is-valid]="lastname?.valid && lastname?.dirty"
+          />
+
+          @if (lastname?.dirty && lastname?.invalid) {
+            <small id="lastnameHelpId" class="form-text text-danger"
+              >A vezetéknév megadása kötelező</small
+            >
+          }
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="mb-3">
+          <label for="firstname" class="form-label">Keresztnév</label>
+          <input
+            type="text"
+            class="form-control"
+            name="firstname"
+            id="firstname"
+            formControlName="firstname"
+            aria-describedby="firstnameHelpId"
+            placeholder=""
+            [class.is-invalid]="firstname?.invalid && firstname?.dirty"
+            [class.is-valid]="firstname?.valid && firstname?.dirty"
+          />
+          @if (firstname?.dirty && firstname?.invalid) {
+            <small id="firstnameHelpId" class="form-text text-danger"
+              >A keresztnév megadása kötelező</small
+            >
+          }
+        </div>
+      </div>-->
+    </div>
+
+    <button
+      class="btn btn-lg btn-success mx-auto d-block"
+      type="submit"
+      [disabled]="generalForm.invalid"
+    >
+      Mentés
+    </button>
+  </form>
+</div>

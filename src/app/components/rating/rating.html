@@ -1,0 +1,18 @@
+<div
+  class="rating d-flex justify-content-center align-items-center gap-2"
+  (mouseleave)="!disabled && onLeave()"
+>
+  <div class="stars d-flex gap-2 justify-content-center">
+    @for (star of stars; track $index) {
+      <i
+        class="bi"
+        [class.bi-star-fill]="star <= displayRating"
+        [class.bi-star]="star > displayRating"
+        [class.disabled]="disabled"
+        (click)="!disabled && setRating(star)"
+        (mouseover)="!disabled && onHover(star)"
+      ></i>
+    }
+  </div>
+  <span> ({{ avgRate }}) </span>
+</div>

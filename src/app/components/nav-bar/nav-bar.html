@@ -1,0 +1,65 @@
+<nav class="navbar navbar-expand-sm navbar-light bg-light">
+  <div class="container">
+    <a class="navbar-brand" routerLink="/"><i class="bi bi-book me-2"></i>Recipe App</a>
+    <button
+      class="navbar-toggler d-lg-none"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#collapsibleNavId"
+      aria-controls="collapsibleNavId"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="collapsibleNavId">
+      <ul class="navbar-nav me-auto mt-2 mt-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/recipes" routerLinkActive="active" aria-current="page"
+            >Receptek <span class="visually-hidden">(current)</span></a
+          >
+        </li>
+      </ul>
+      <!--
+      <form class="d-flex my-2 my-lg-0">
+        <input class="form-control me-sm-2" type="text" placeholder="Keresés" />
+        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Keresés</button>
+      </form>
+      -->
+
+      <ul class="navbar-nav mt-2 mt-lg-0 ms-auto">
+        @if ((auth.isLoggedin$ | async) === true) {
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="dropdownId"
+              data-bs-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+              >{{ auth.currentUser()?.name }}</a
+            >
+            <div class="dropdown-menu" aria-labelledby="dropdownId">
+              <a class="dropdown-item" routerLink="/profile">Profilom</a>
+
+              <a class="dropdown-item" routerLink="/profile/manager/recipes">Receptjeim</a>
+              <a class="dropdown-item" routerLink="/profile/favorites">Kedvencek</a>
+              <a class="dropdown-item" href="#" (click)="onLogout($event)">Kijelentkezés</a>
+            </div>
+          </li>
+        } @else {
+          <li class="nav-item">
+            <a class="nav-link active" routerLink="/signin" aria-current="page"
+              >Belépés <span class="visually-hidden">(current)</span></a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" routerLink="/signup" aria-current="page"
+              >Regisztráció <span class="visually-hidden">(current)</span></a
+            >
+          </li>
+        }
+      </ul>
+    </div>
+  </div>
+</nav>

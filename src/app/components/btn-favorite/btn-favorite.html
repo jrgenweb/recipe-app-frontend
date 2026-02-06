@@ -1,0 +1,8 @@
+<span (click)="onChange()">
+  <i
+    class="bi"
+    [class.bi-heart]="!isFavorite"
+    [class.bi-heart-fill]="isFavorite"
+    [class.disabled]="disabled"
+  ></i>
+</span>
