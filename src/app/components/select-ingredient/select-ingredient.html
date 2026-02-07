@@ -1,0 +1,48 @@
+<div class="position-relative" #selectIngredientEl>
+  <div class="form-control d-flex flex-wrap gap-1 align-items-center form-control-lg">
+    @for (si of selectedIngredients(); track si.id) {
+      <span class="badge text-bg-success">
+        {{ si.name }}
+        <i class="bi bi-x ms-1 pointer" (click)="onRemove(si.id)"></i>
+      </span>
+    }
+    <div class="d-flex flex-grow-1 gap-2 align-items-center">
+      <div class="flex-grow-1 position-relative">
+        <input
+          class="search-string border-0 w-100"
+          [value]="searchString()"
+          (input)="searchString.set($any($event.target).value)"
+          (focus)="isShow.set(true)"
+          placeholder="Hozzávaló neve..."
+        />
+        @if (viewModel().hasSearch) {
+          <button
+            class="btn p-0 fs-5 rounded-circle text-danger position-absolute top-0 end-0 top-50 translate-middle-y"
+            (click)="clear()"
+          >
+            <i class="bi bi-x"></i>
+          </button>
+        }
+      </div>
+      @if (viewModel().hasSelected) {
+        <button class="btn btn-sm btn-outline-danger d-inline-block ms-auto" (click)="clear()">
+          Törlés
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (viewModel().isOpen) {
+    <div class="list-group position-absolute w-100 shadow z-3">
+      @for (ingredient of viewModel().ingredients; track ingredient.id) {
+        <button
+          type="button"
+          class="list-group-item list-group-item-action"
+          (click)="onAdd(ingredient)"
+        >
+          {{ ingredient.name }}
+        </button>
+      }
+    </div>
+  }
+</div>

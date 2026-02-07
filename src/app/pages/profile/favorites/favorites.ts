@@ -1,17 +1,19 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FavoriteService } from '../../../shared/services/favorite-service';
 import { AsyncPipe } from '@angular/common';
 
+import { RecipeCardFavorite } from '../../../components/recipe-card-favorite/recipe-card-favorite';
 import { RecipeCard } from '../../../components/recipe-card/recipe-card';
 
 @Component({
   selector: 'app-favorites',
-  imports: [AsyncPipe, RecipeCard],
+  imports: [AsyncPipe, RecipeCardFavorite, RecipeCard],
   templateUrl: './favorites.html',
   styleUrl: './favorites.scss',
 })
 export class Favorites implements OnInit {
-  constructor(public favoriteService: FavoriteService) {}
+  public favoriteService: FavoriteService = inject(FavoriteService);
+  constructor() {}
   ngOnInit(): void {
     this.favoriteService.getAll();
   }

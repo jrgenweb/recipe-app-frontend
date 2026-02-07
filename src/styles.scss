@@ -3,3 +3,10 @@
     height: 250px;
     object-fit: cover;
 }
+
+@media screen and (max-width: 600px) {
+    .card-img-top {
+        height: 150px;
+        object-fit: cover;
+    }
+}

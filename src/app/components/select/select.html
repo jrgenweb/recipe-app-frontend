@@ -1,15 +1,26 @@
-<div class="py-3">
-  @for (item of displayItems; track $index) {
-    @if (isSelected(item)) {
+<div class="py-3 d-flex flex-row gap-2 align-items-center">
+  <span
+    class="badge rounded-pill bg-primary text-light badge-lg fs-6 flex-grow-0"
+    [class.bg-primary]="isSelected(allOption)()"
+    [class.bg-light]="!isSelected(allOption)()"
+    [class.text-light]="isSelected(allOption)()"
+    [class.text-dark]="!isSelected(allOption)()"
+    (click)="onItemClick(allOption)"
+  >
+    {{ allOption.label }}
+  </span>
+  <div class="d-flex overflow-x-auto overflow-y-hidden gap-2">
+    @for (item of displayItems(); track $index) {
       <span
-        class="badge rounded-pill bg-primary text-light badge-lg fs-6"
+        class="badge rounded-pill fs-6"
+        [class.bg-primary]="isSelected(item)()"
+        [class.bg-light]="!isSelected(item)()"
+        [class.text-light]="isSelected(item)()"
+        [class.text-dark]="!isSelected(item)()"
         (click)="onItemClick(item)"
-        >{{ item.label }}</span
       >
-    } @else {
-      <span class="badge rounded-pill bg-light text-dark fs-6" (click)="onItemClick(item)">{{
-        item.label
-      }}</span>
+        {{ item.label }}
+      </span>
     }
-  }
+  </div>
 </div>

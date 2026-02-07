@@ -1,13 +1,13 @@
 import {
-  AfterViewInit,
   Component,
   EventEmitter,
   forwardRef,
   Input,
-  OnChanges,
-  OnInit,
   Output,
-  SimpleChanges,
+  computed,
+  signal,
+  OnChanges,
+  effect,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
@@ -20,9 +20,8 @@ export type TSelect = ISelect | ISelect[];
 
 @Component({
   selector: 'app-select',
-  imports: [],
   templateUrl: './select.html',
-  styleUrl: './select.scss',
+  styleUrls: ['./select.scss'],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -31,33 +30,40 @@ export type TSelect = ISelect | ISelect[];
     },
   ],
 })
-export class Select implements OnChanges, ControlValueAccessor {
+export class Select implements ControlValueAccessor, OnChanges {
   @Input() items: ISelect[] = [];
   @Input() multiple = true;
-
   @Output() changeSelectedEvt = new EventEmitter<TSelect>();
 
   allOption: ISelect = { label: 'Összes', value: 'all' };
-  displayItems: ISelect[] = [];
 
-  // belső selected tárolás
-  selected: ISelect[] = [];
+  // Signals
+  selected = signal<ISelect[]>([]);
+
+  displayItems = signal<ISelect[]>([]);
+
+  private selectedEffect = effect(() => {
+    if (this.selected().length === 0) {
+      this.selected.set([this.allOption]);
+    }
+  });
+  // Computed
+  isSelected = (item: ISelect) =>
+    computed(() => this.selected().some((s) => s.value === item.value));
 
   // ControlValueAccessor callbacks
-  onChangeFn: any = () => {};
-  onTouchedFn: any = () => {};
+  private onChangeFn: (_val?: any) => void = (_val?: any) => {};
+  private onTouchedFn: () => void = () => {};
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['items']) {
-      this.displayItems = [this.allOption, ...(this.items || [])];
-    }
+  ngOnChanges() {
+    this.displayItems.set(this.items.filter((i) => i.value !== this.allOption.value));
   }
 
   writeValue(obj: TSelect): void {
     if (obj) {
-      this.selected = Array.isArray(obj) ? obj : [obj];
+      this.selected.set(Array.isArray(obj) ? obj : [obj]);
     } else {
-      this.selected = [];
+      this.selected.set([]);
     }
   }
 
@@ -69,44 +75,39 @@ export class Select implements OnChanges, ControlValueAccessor {
     this.onTouchedFn = fn;
   }
 
+  /*
+  
   setDisabledState?(isDisabled: boolean): void {
-    // ha kell, pl. <select [disabled]="isDisabled">
+    // opcionális
   }
-
-  isSelected(item: ISelect): boolean {
-    return this.selected.some((s) => s.value === item.value);
-  }
+    */
 
   onItemClick(item: ISelect) {
+    let newSelected: ISelect[];
+
     if (this.multiple) {
       if (item.value === this.allOption.value) {
-        // "Összes" kiválasztása
-        if (!this.selected.some((s) => s.value === this.allOption.value)) {
-          // Ha még nincs kiválasztva → beállítjuk
-          this.selected = [item];
-        }
-        // Ha már ki van választva → semmit ne csináljunk
+        newSelected = [item];
       } else {
-        // Simán kiválasztott elem
-        const filtered = this.selected.filter((s) => s.value !== this.allOption.value);
+        const filtered = this.selected().filter((s) => s.value !== this.allOption.value);
         const exists = filtered.findIndex((s) => s.value === item.value);
-
         if (exists !== -1) {
-          // már kiválasztva → törlés
-          this.selected = filtered.filter((s) => s.value !== item.value);
+          // törlés
+          newSelected = filtered.filter((s) => s.value !== item.value);
         } else {
-          // új elem hozzáadása
-          this.selected = [...filtered, item];
+          // hozzáadás
+          newSelected = [...filtered, item];
         }
       }
     } else {
-      // Single select
-      this.selected = [item];
+      newSelected = [item];
     }
 
-    // emit és ControlValueAccessor callback
-    this.changeSelectedEvt.emit(this.multiple ? this.selected : this.selected[0]);
-    this.onChangeFn(this.multiple ? this.selected : this.selected[0]);
+    this.selected.set(newSelected);
+
+    // emit + control value accessor
+    this.changeSelectedEvt.emit(this.multiple ? newSelected : newSelected[0]);
+    this.onChangeFn(this.multiple ? newSelected : newSelected[0]);
     this.onTouchedFn();
   }
 }

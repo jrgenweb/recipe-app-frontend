@@ -1,0 +1,48 @@
+<button
+  class="btn btn-primary my-3 ms-auto d-block"
+  [routerLink]="['/dashboard/manage/recipes/add']"
+>
+  <i class="bi bi-plus"></i>
+  Hozzáadás
+</button>
+<app-recipe-filter
+  (changeCategoryIdEvt)="changeCategory($event)"
+  (changeSearchStringEvt)="changeSearchString($event)"
+  (changeCusinIdEvt)="changeCuisin($event)"
+></app-recipe-filter>
+
+<div class="row mt-3">
+  @for (recipe of vm().recipes.data; track $index) {
+    <div class="col-6 col-md-4 col-lg-3 mb-3">
+      <app-recipe-card [recipe]="recipe">
+        <div class="fs-4 mt-3 d-flex gap-2 justify-content-between">
+          <a [routerLink]="['/dashboard/manage/recipes/edit', recipe.id]">
+            <i class="bi bi-pencil text-success"></i
+          ></a>
+          <a href="#" (click)="showDeleteConfirm(recipe); $event.preventDefault()"
+            ><i class="bi bi-trash text-danger"></i
+          ></a>
+        </div>
+      </app-recipe-card>
+    </div>
+  }
+  @if (vm().loading) {
+    <div class="d-flex justify-content-center align-items-center">
+      <div class="spinner-border text-primary spinner-border-lg" role="status">
+        <span class="visually-hidden">Betöltés...</span>
+      </div>
+    </div>
+  } @else if (!vm().loading && vm().recipes.data.length === 0) {
+    <p class="text-center my-3">Nincs találat</p>
+  }
+</div>
+<!-- <app-infinite-scroll (scrollEvent)="onScroll($event)"></app-infinite-scroll> -->
+<app-confirm-modal
+  [isOpen]="isShowDeleteConfirm()"
+  [title]="'Törlés megerősítése'"
+  [btnCloseTitle]="'Mégse'"
+  [btnConfirmTitle]="'Törlés'"
+  (confirmEvt)="onConfirmDelete($event)"
+>
+  Biztosan törölni szeretnéd a <b>"{{ selectedRecipe()?.name }}"</b> -t ?
+</app-confirm-modal>

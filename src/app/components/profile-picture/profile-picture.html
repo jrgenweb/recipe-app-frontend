@@ -1,0 +1,10 @@
+<img
+  [src]="src"
+  [title]="title"
+  [alt]="title + ' profilképe'"
+  class="profile-picture me-2"
+  [class.sm]="size === 'sm'"
+  [class.lg]="size === 'lg'"
+  [class.md]="size === 'md'"
+  (error)="onImageError($event)"
+/>

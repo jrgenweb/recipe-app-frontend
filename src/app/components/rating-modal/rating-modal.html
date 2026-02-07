@@ -1,0 +1,43 @@
+<!-- Rating Display -->
+
+<!-- Rating Modal -->
+@if (isModalOpen) {
+  <div
+    class="modal fade show d-block rating-modal-backdrop z-3"
+    role="dialog"
+    aria-labelledby="ratingModalTitle"
+    aria-hidden="false"
+  >
+    <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="ratingModalTitle">Recept értékelése</h5>
+          <button
+            type="button"
+            class="btn-close"
+            aria-label="Bezárás"
+            (click)="closeModal()"
+          ></button>
+        </div>
+        <div class="modal-body d-flex justify-content-center">
+          <div class="stars-rating d-flex gap-2" (mouseleave)="onLeave()">
+            @for (star of stars; track $index) {
+              <i
+                class="bi rating-star"
+                [class.bi-star-fill]="star <= displayRating"
+                [class.bi-star]="star > displayRating"
+                (click)="setRating(star)"
+                (mouseover)="onHover(star)"
+                [attr.aria-label]="star + ' csillag'"
+                role="button"
+              ></i>
+            }
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Bezárás</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

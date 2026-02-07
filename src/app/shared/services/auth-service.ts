@@ -1,9 +1,21 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { inject, Injectable, signal } from '@angular/core';
+import { BehaviorSubject, Observable, of, tap } from 'rxjs';
 import { API_URL } from '../../config/config';
-import { IRegister, IUser, LoginResponse } from '@recipe/shared';
+import { ICreateUser, IRegister, IUser, LoginResponse } from '@recipe/shared';
 import { Router } from '@angular/router';
+import { ToastService } from './toast-service';
+
+interface ChangePasswordSuccess {
+  updated: boolean;
+  message: string;
+}
+
+interface ChangePasswordError {
+  error: string;
+}
+
+type ChangePasswordResponse = ChangePasswordSuccess | ChangePasswordError;
 
 @Injectable({
   providedIn: 'root',
@@ -14,10 +26,10 @@ export class AuthService {
   public currentUser = signal<IUser | null>(null);
   public isLoggedin$ = new BehaviorSubject<boolean>(false);
 
-  constructor(
-    private http: HttpClient,
-    private router: Router,
-  ) {
+  private http: HttpClient = inject(HttpClient);
+  private router: Router = inject(Router);
+  private toastService = inject(ToastService);
+  constructor() {
     if (this.getToken()) {
       this.isLoggedin$.next(true);
       this.loadCurrentUser();
@@ -73,5 +85,66 @@ export class AuthService {
   // Ellenőrzi, hogy be van-e jelentkezve
   isLoggedIn(): boolean {
     return !!this.getToken();
+  }
+
+  changePassword(oldPassword: string, newPassword: string): Observable<ChangePasswordResponse> {
+    const token = this.getToken();
+    if (!token) return of({ message: 'Nincs érvényes token', updated: false }); // nincs token, nem hívjuk
+
+    return this.http
+      .patch<ChangePasswordResponse>(API_URL + '/users/change-password/' + this.currentUser()?.id, {
+        oldPassword,
+        newPassword,
+      })
+      .pipe(
+        tap({
+          next: (res) => {
+            if ('error' in res && res.error) {
+              // hibakezelés toast
+              this.toastService.add({ message: res.error, type: 'danger' });
+              return; // ne logout
+            }
+
+            // sikeres változtatás
+            this.toastService.add({ message: 'Jelszó sikeresen megváltoztatva!', type: 'success' });
+            this.logout(); // jelszóváltoztatás után kijelentkeztetjük
+          },
+          error: (err) => {
+            this.toastService.add({
+              message:
+                'Hiba történt a jelszóváltoztatás során: ' + (err.error?.message ?? err.message),
+              type: 'danger',
+            });
+          },
+        }),
+      );
+  }
+  updateUser(user: Partial<ICreateUser>) {
+    const token = this.getToken();
+    if (!token) return;
+
+    this.http
+      .patch<{ message: string }>(API_URL + '/users/' + this.currentUser()?.id, user)
+      .subscribe({
+        next: () => {
+          this.loadCurrentUser(); // Frissíti a felhasználót a szerverről
+        },
+      });
+  }
+  deleteUser(password: string) {
+    const token = this.getToken();
+    if (!token) return;
+
+    this.http
+      .delete<{ deleted: boolean }>(API_URL + '/users/' + this.currentUser()?.id, {
+        body: { password },
+      })
+      .subscribe({
+        next: (resp) => {
+          if (resp.deleted) this.logout(); // Kijelentkezés a profil törlése után
+          this.router.navigate(['/']);
+          this.toastService.add({ message: 'Sikeresen törölted a profilod', type: 'success' });
+        },
+      });
   }
 }

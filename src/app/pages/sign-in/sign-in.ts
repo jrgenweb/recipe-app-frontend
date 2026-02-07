@@ -1,7 +1,8 @@
-import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../shared/services/auth-service';
 import { Router } from '@angular/router';
+import { ToastService } from '../../shared/services/toast-service';
 
 @Component({
   selector: 'app-sign-in',
@@ -11,13 +12,13 @@ import { Router } from '@angular/router';
 })
 export class SignIn implements OnInit {
   loginForm!: FormGroup;
+  invalidLogin = signal(false);
 
-  invalidLogin = false;
+  private auth = inject(AuthService);
+  private router = inject(Router);
+  private toastService = inject(ToastService);
 
-  constructor(
-    private auth: AuthService,
-    private router: Router,
-  ) {}
+  constructor() {}
   ngOnInit(): void {
     this.loginForm = new FormGroup({
       email: new FormControl('', Validators.required),
@@ -27,19 +28,16 @@ export class SignIn implements OnInit {
 
   onSubmit() {
     if (this.loginForm.valid) {
-      console.log('Vali', this.loginForm.value);
-
       const { email, password } = this.loginForm.value;
-
       this.auth.login(email, password).subscribe({
-        next: (response) => {
-          console.log(response);
-          this.invalidLogin = false;
+        next: () => {
           this.router.navigate(['/recipes']);
+          //this.toastService.add({ message: 'Hibás email vagy jelszó', type: 'danger' });
+          this.invalidLogin.set(false);
         },
-        error: (err) => {
-          this.invalidLogin = true;
-          console.log(err);
+        error: () => {
+          this.invalidLogin.set(true);
+          //this.toastService.add({ message: 'Hibás email vagy jelszó', type: 'danger' });
         },
       });
     }

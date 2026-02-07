@@ -1,12 +1,4 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnChanges,
-  OnInit,
-  Output,
-  SimpleChanges,
-} from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output } from '@angular/core';
 
 @Component({
   selector: 'app-rating',
@@ -30,7 +22,7 @@ export class Rating implements OnInit, OnChanges {
     }
     this.current = Math.floor(this.avgRate);
   }
-  ngOnChanges(changes: SimpleChanges): void {
+  ngOnChanges(): void {
     this.current = Math.floor(this.avgRate);
   }
 
@@ -42,7 +34,6 @@ export class Rating implements OnInit, OnChanges {
   }
   setRating(rate: number) {
     this.changeRateEvt.emit({ recipeId: this.recipeId, rate: rate });
-    console.log(rate);
   }
   onHover(star: number) {
     this.hover = star;

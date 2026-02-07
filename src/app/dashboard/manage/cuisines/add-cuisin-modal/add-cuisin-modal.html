@@ -1,0 +1,65 @@
+@if (isOpen) {
+  <div
+    class="modal fade show d-block"
+    id="modalId"
+    tabindex="-1"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
+    role="dialog"
+    aria-labelledby="modalTitleId"
+    aria-hidden="true"
+  >
+    <div
+      class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-sm"
+      role="document"
+    >
+      <div class="modal-content">
+        <form [formGroup]="cuisinForm" (ngSubmit)="onSubmit()">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalTitleId">
+              {{ cuisin ? 'Kategória szerkesztése' : 'Kategória hozzáadása' }}
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+              (click)="onCancel()"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="name" class="form-label">Kategória neve</label>
+              <input
+                type="text"
+                class="form-control"
+                name="name"
+                id="name"
+                aria-describedby="nameHelpId"
+                placeholder=""
+                formControlName="name"
+              />
+              @if (cuisinForm.get('name')?.dirty && cuisinForm.get('name')?.invalid) {
+                <small id="nameHelpId" class="form-text text-danger"
+                  >Kategória név megadása kötelező!</small
+                >
+              }
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+              (click)="onCancel()"
+            >
+              Mégse
+            </button>
+            <button type="submit" class="btn btn-primary">Mentés</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
+}

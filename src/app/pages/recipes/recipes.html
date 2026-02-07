@@ -5,25 +5,27 @@
     (changeCusinIdEvt)="changeCuisin($event)"
   ></app-recipe-filter>
 </div>
-@let recipes = recipeService.recipes$ | async;
-@let favoriteRecipeIds = favoriteService.favoriteIds$ | async;
+<div class="mt-3">
+  <app-select-ingredient (ingredientChanged)="onChangeIngredient($event)"></app-select-ingredient>
+</div>
+
 <div class="row mt-5">
-  @for (recipe of recipes?.data; track $index) {
-    <div class="col-6 col-md-4 col-lg-3 mb-3">
+  @for (recipe of vm().recipes.data; track $index) {
+    <div class="col-6 col-md-6 col-lg-4 mb-3">
       <app-recipe-card
         [recipe]="recipe"
-        [isFavorite]="favoriteRecipeIds?.includes(recipe.id) ? true : false"
+        [isFavorite]="vm().favoriteRecipes.includes(recipe.id) ? true : false"
       ></app-recipe-card>
     </div>
   }
 </div>
-@if (recipeService.loading) {
+@if (vm().loading) {
   <div class="d-flex justify-content-center align-items-center">
     <div class="spinner-border text-primary spinner-border-lg" role="status">
       <span class="visually-hidden">Betöltés...</span>
     </div>
   </div>
-} @else if (!recipeService.loading && recipes?.data?.length === 0) {
+} @else if (!vm().loading && vm().recipes.data.length === 0) {
   <p class="text-center my-3">Nincs találat</p>
 }
-<app-infinite-scroll-component (onScrollEvent)="onScroll($event)"></app-infinite-scroll-component>
+<app-infinite-scroll (loadMore)="loadMore(inf)" #inf></app-infinite-scroll>

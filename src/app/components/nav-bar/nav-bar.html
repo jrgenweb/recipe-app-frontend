@@ -1,6 +1,7 @@
 <nav class="navbar navbar-expand-sm navbar-light bg-light">
   <div class="container">
     <a class="navbar-brand" routerLink="/"><i class="bi bi-book me-2"></i>Recipe App</a>
+
     <button
       class="navbar-toggler d-lg-none"
       type="button"
@@ -19,6 +20,12 @@
             >Receptek <span class="visually-hidden">(current)</span></a
           >
         </li>
+
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/dashboard" routerLinkActive="active" aria-current="page"
+            >Dashboard <span class="visually-hidden">(current)</span></a
+          >
+        </li>
       </ul>
       <!--
       <form class="d-flex my-2 my-lg-0">
@@ -28,7 +35,7 @@
       -->
 
       <ul class="navbar-nav mt-2 mt-lg-0 ms-auto">
-        @if ((auth.isLoggedin$ | async) === true) {
+        @if (auth.currentUser()) {
           <li class="nav-item dropdown">
             <a
               class="nav-link dropdown-toggle"
@@ -37,12 +44,19 @@
               data-bs-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false"
-              >{{ auth.currentUser()?.name }}</a
+            >
+              <app-profile-picture
+                [src]="auth.currentUser()?.picture || ''"
+                [title]="auth.currentUser()!.name"
+                size="md"
+              ></app-profile-picture>
+
+              {{ auth.currentUser()?.name }}</a
             >
             <div class="dropdown-menu" aria-labelledby="dropdownId">
-              <a class="dropdown-item" routerLink="/profile">Profilom</a>
+              <a class="dropdown-item" routerLink="/profile"> Profilom</a>
 
-              <a class="dropdown-item" routerLink="/profile/manager/recipes">Receptjeim</a>
+              <a class="dropdown-item" routerLink="/profile/recipes">Receptjeim</a>
               <a class="dropdown-item" routerLink="/profile/favorites">Kedvencek</a>
               <a class="dropdown-item" href="#" (click)="onLogout($event)">Kijelentkezés</a>
             </div>

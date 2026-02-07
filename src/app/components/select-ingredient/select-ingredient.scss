@@ -1,0 +1,18 @@
+.list-group {
+    top: calc(100% + 12px);
+}
+.list-group-item {
+    cursor: pointer;
+}
+.pointer {
+    cursor: pointer;
+}
+.search-string {
+    min-width: 300px;
+}
+
+@media (max-width: 400px) {
+    .search-string {
+        min-width: 100%;
+    }
+}

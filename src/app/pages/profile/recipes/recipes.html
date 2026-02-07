@@ -1,0 +1,53 @@
+<button class="btn btn-primary d-block ms-auto my-3" routerLink="/profile/recipes/add">
+  <i class="bi bi-plus"></i>
+  Hozzáadás
+</button>
+
+<div class="mt-3">
+  <app-recipe-filter
+    (changeCategoryIdEvt)="changeCategory($event)"
+    (changeSearchStringEvt)="changeSearchString($event)"
+  ></app-recipe-filter>
+</div>
+@let ownRecipes = recipeService.recipes$ | async;
+@let favoriteRecipeIds = favoriteService.favoriteIds$ | async;
+
+<div class="row mt-5">
+  @for (recipe of ownRecipes?.data; track $index) {
+    <div class="col-6 col-md-4 col-lg-3 mb-3">
+      <app-recipe-card
+        [recipe]="recipe"
+        [isFavorite]="favoriteRecipeIds?.includes(recipe.id) ? true : false"
+      >
+        <div class="fs-4 mt-3 d-flex gap-2 justify-content-between">
+          <a [routerLink]="['/profile/recipes/edit', recipe.id]">
+            <i class="bi bi-pencil text-success"></i
+          ></a>
+          <a href="#" (click)="showDeleteConfirm(recipe); $event.preventDefault()"
+            ><i class="bi bi-trash text-danger"></i
+          ></a>
+        </div>
+      </app-recipe-card>
+    </div>
+  }
+</div>
+@if (recipeService.loading) {
+  <div class="d-flex justify-content-center align-items-center">
+    <div class="spinner-border text-primary spinner-border-lg" role="status">
+      <span class="visually-hidden">Betöltés...</span>
+    </div>
+  </div>
+} @else if (!recipeService.loading && ownRecipes?.data?.length === 0) {
+  <p class="text-center my-3">Nincs találat</p>
+}
+
+<app-confirm-modal
+  [btnCloseTitle]="'Mégse'"
+  [btnConfirmTitle]="'Törlés'"
+  (confirmEvt)="onConfirmDelete($event)"
+  [isOpen]="isShowDeleteConfirm"
+  [title]="'Törlés megerősítése'"
+>
+  Biztosan törölni szeretnéd a <b>"{{ selectedRecipe?.name }}"</b> -t ?
+</app-confirm-modal>
+<app-infinite-scroll (loadMore)="loadMore(inf)" #inf></app-infinite-scroll>

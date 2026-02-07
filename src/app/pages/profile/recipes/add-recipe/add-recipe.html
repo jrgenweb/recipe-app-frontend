@@ -1,0 +1,301 @@
+<div class="d-flex justify-content-between align-items-center">
+  <h2 class="my-5">Recept {{ isEditMode ? 'szerkesztése' : 'hozzááadása' }}</h2>
+  <a routerLink="/profile/recipes">Vissza</a>
+</div>
+<form [formGroup]="recipeForm" (ngSubmit)="onSubmit()">
+  <div class="border border-1 border-accent p-2 rounded-2 shadow-sm bg-light">
+    <div class="mb-3">
+      <label for="name" class="form-label">Recept neve</label>
+      <input
+        type="text"
+        class="form-control"
+        name="name"
+        id="name"
+        aria-describedby="nameHelpId"
+        placeholder=""
+        formControlName="name"
+        [class.is-valid]="recipeForm.get('name')?.dirty && recipeForm.get('name')?.valid"
+        [class.is-invalid]="recipeForm.get('name')?.dirty && recipeForm.get('name')?.invalid"
+      />
+      @if (recipeForm.get('name')?.dirty && recipeForm.get('name')?.invalid) {
+        <small id="emailHelpId" class="form-text text-danger">Név megadása kötelező</small>
+      }
+    </div>
+
+    <div class="mb-3">
+      <label for="name" class="form-label">Recept leírása</label>
+      <textarea
+        name="description"
+        id="description"
+        class="form-control"
+        id="description"
+        aria-describedby="descriptionHelpId"
+        placeholder=""
+        formControlName="description"
+        [class.is-valid]="
+          recipeForm.get('description')?.dirty && recipeForm.get('description')?.valid
+        "
+        [class.is-invalid]="
+          recipeForm.get('description')?.dirty && recipeForm.get('description')?.invalid
+        "
+      ></textarea>
+      @if (recipeForm.get('description')?.dirty && recipeForm.get('description')?.invalid) {
+        <small id="descriptionHelpId" class="form-text text-danger">Leírás megadása kötelező</small>
+      }
+    </div>
+
+    <div class="mb-3">
+      <label for="cuisineId" class="form-label">Konyha</label>
+      <select
+        class="form-select form-select-lg"
+        name="cuisineId"
+        id="cuisineId"
+        aria-describedby="cuisineIdHelpId"
+        formControlName="cuisineId"
+        [class.is-valid]="recipeForm.get('cuisineId')?.dirty && recipeForm.get('cuisineId')?.valid"
+        [class.is-invalid]="
+          recipeForm.get('cuisineId')?.dirty && recipeForm.get('cuisineId')?.invalid
+        "
+      >
+        @for (cuisin of cuisinService.cuisines$ | async; track $index) {
+          <option [value]="cuisin.id">{{ cuisin.name }}</option>
+        }
+      </select>
+      @if (recipeForm.get('cuisineId')?.dirty && recipeForm.get('cuisineId')?.invalid) {
+        <small id="cuisineIdHelpId" class="form-text text-danger"
+          >Legalább 1 kategóriát kikell választanod!</small
+        >
+      }
+    </div>
+
+    <div class="mb-3">
+      <label for="categoryIds" class="form-label">Kategóriák</label>
+      <select
+        multiple
+        class="form-select form-select-lg"
+        name="categoryIds"
+        id="categoryIds"
+        aria-describedby="categoryIdsHelpId"
+        formControlName="categoryIds"
+        [class.is-valid]="
+          recipeForm.get('categoryIds')?.dirty && recipeForm.get('categoryIds')?.valid
+        "
+        [class.is-invalid]="
+          recipeForm.get('categoryIds')?.dirty && recipeForm.get('categoryIds')?.invalid
+        "
+      >
+        @for (category of categoryService.categories$ | async; track $index) {
+          <option [value]="category.id">{{ category.name }}</option>
+        }
+      </select>
+      @if (recipeForm.get('categoryIds')?.dirty && recipeForm.get('categoryIds')?.invalid) {
+        <small id="categoryIdsHelpId" class="form-text text-danger"
+          >Legalább 1 kategóriát kikell választanod!</small
+        >
+      }
+    </div>
+  </div>
+
+  <!-- Képek-->
+  <div>
+    <h3 class="my-5">Képek</h3>
+
+    <button class="btn btn-primary mb-3" (click)="addImage()">+ Kép</button>
+    <div
+      class="border border-1 border-accent p-2 rounded-2 shadow-sm bg-light"
+      formArrayName="imageUrls"
+    >
+      @for (image of imageUrls.controls; let i = $index; track $index) {
+        <div>
+          <div class="d-flex justify-content-between align-items-center">
+            <h4>{{ i + 1 }}. Kép</h4>
+            <button
+              type="button"
+              class="btn btn-danger btn-sm rounded-circle"
+              (click)="removeImage($index)"
+            >
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+          <div class="mb-3">
+            <label for="i" class="form-label">Kép url-je</label>
+            <input
+              type="text"
+              class="form-control"
+              name="i"
+              id="i"
+              aria-describedby="imageUrlId{{ i }}"
+              placeholder="Kép url-je"
+              [class.is-valid]="image.valid && image.dirty"
+              [class.is-invalid]="image.invalid && image.dirty"
+              [formControlName]="i"
+            />
+            @if (image.getError('invalidImageUrl')) {
+              <small id="imageUrlId{{ i }}" class="form-text text-danger"
+                >Érvényes kép url-t adj meg!</small
+              >
+            }
+          </div>
+        </div>
+      } @empty {
+        <p class="alert alert-info">Nem adtál meg képet</p>
+      }
+    </div>
+  </div>
+  <div>
+    <h3 class="my-5">Hozzávalók</h3>
+
+    <div class="d-flex align-items-center gap-3">
+      <div class="mb-3">
+        <label for="" class="form-label">Hozzávaló</label>
+        <select
+          class="form-select form-select-lg"
+          name=""
+          id=""
+          formControlName="selectedIngredientId"
+        >
+          <option disabled>Kiválasztás</option>
+
+          @for (ingredient of ingredientService.ingredients$ | async; track $index) {
+            <option [value]="ingredient.id" (click)="selectIngredient(ingredient)">
+              {{ ingredient.name }} ({{ ingredient.unit }})
+            </option>
+          }
+        </select>
+      </div>
+      <button class="btn btn-primary btn-lg" (click)="addIngredient()">Hozzáadás</button>
+    </div>
+
+    <div formArrayName="ingredients">
+      @for (ingredient of ingredients.controls; let i = $index; track i) {
+        <div [formGroupName]="i" class="border border-1 border-accent p-2 rounded-2 mb-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <h4>
+              {{ ingredient.get('ingredientName')?.value }}
+              ({{ ingredient.get('ingredientUnit')?.value }})
+            </h4>
+            <button class="btn btn-sm btn-danger rounded-circle" (click)="removeIngredient(i)">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+          <div class="mb-3">
+            <label for="ingredientId" class="form-label">
+              <input
+                type="hidden"
+                class="form-control"
+                name="ingredientId"
+                id="ingredientId"
+                aria-describedby="emailHelpId"
+                placeholder=""
+                formControlName="ingredientId"
+              />
+            </label>
+          </div>
+
+          <div class="mb-3">
+            <label for="name" class="form-label"
+              >Mennyiség ({{ ingredient.get('ingredientUnit')?.value }})</label
+            >
+            <input
+              type="number"
+              class="form-control"
+              name="quantity"
+              id="quantity"
+              aria-describedby="nameHelpId"
+              placeholder=""
+              formControlName="quantity"
+              [class.is-valid]="ingredient.dirty && ingredient.valid"
+              [class.is-invalid]="ingredient.dirty && ingredient.invalid"
+            />
+            @if (ingredient.dirty && ingredient.invalid) {
+              <small id="emailHelpId" class="form-text text-danger"
+                >Mennyiség megadása kötelező!</small
+              >
+            }
+          </div>
+        </div>
+      } @empty {
+        <p class="alert alert-info">Nem adtál meg hozzávalókat</p>
+      }
+    </div>
+  </div>
+  <div class="" formArrayName="steps">
+    <h3 class="my-5">Elkészítés lépései</h3>
+
+    <div class="step">
+      @for (step of steps.controls; let i = $index; track i) {
+        <div [formGroupName]="i" class="border border-1 border-accent p-2 rounded-2 mb-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <h4>{{ i + 1 }} Lépés</h4>
+
+            <button class="btn btn-sm btn-danger rounded-circle" (click)="removeStep(i)">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+          <div class="mb-3">
+            <label for="stepOrder" class="form-label">
+              <input
+                type="hidden"
+                class="form-control"
+                name="stepOrder"
+                id="stepOrder"
+                aria-describedby="emailHelpId"
+                placeholder=""
+                formControlName="stepOrder"
+              />
+            </label>
+          </div>
+
+          <div class="mb-3">
+            <label for="name" class="form-label">Megnevezés</label>
+            <input
+              type="text"
+              class="form-control"
+              name="name"
+              id="name"
+              aria-describedby="nameHelpId"
+              placeholder=""
+              formControlName="name"
+              [class.is-valid]="step.get('name')?.dirty && step.get('name')?.valid"
+              [class.is-invalid]="step.get('name')?.dirty && step.get('name')?.invalid"
+            />
+            @if (step.get('name')?.dirty && step.get('name')?.invalid) {
+              <small id="emailHelpId" class="form-text text-danger"
+                >Megnevezés megadása kötelező!</small
+              >
+            }
+          </div>
+
+          <div class="mb-3">
+            <label for="name" class="form-label">Részletes leírás</label>
+            <textarea
+              name="description"
+              id="description"
+              class="form-control"
+              id="description"
+              aria-describedby="descriptionHelpId"
+              placeholder=""
+              formControlName="description"
+              [class.is-valid]="step.get('description')?.dirty && step.get('description')?.valid"
+              [class.is-invalid]="
+                step.get('description')?.dirty && step.get('description')?.invalid
+              "
+            ></textarea>
+            @if (step.get('description')?.dirty && step.get('description')?.invalid) {
+              <small id="descriptionHelpId" class="form-text text-danger"
+                >Leírás megadása kötelező</small
+              >
+            }
+          </div>
+        </div>
+      } @empty {
+        <p class="alert alert-info">Nem adtál meg lépéseket</p>
+      }
+    </div>
+    <!-- steps form end-->
+
+    <button class="btn-primary btn" (click)="addStep()">+ Lépés</button>
+  </div>
+
+  <button class="btn btn-success btn-lg my-3" [disabled]="recipeForm.invalid">Mentés</button>
+</form>

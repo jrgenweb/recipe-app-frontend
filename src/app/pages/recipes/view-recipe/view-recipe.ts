@@ -1,45 +1,87 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RecipeService } from '../../../shared/services/recipe-service';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
-import { catchError, EMPTY, map, Observable, switchMap } from 'rxjs';
-import { AsyncPipe, DatePipe } from '@angular/common';
+import { catchError, EMPTY, map } from 'rxjs';
+import { DatePipe } from '@angular/common';
 import { AddComment } from '../add-comment/add-comment';
 import { TimeAgoPipe } from '../../../shared/pipes/time-ago-pipe';
 import { RecipeGallery } from '../../../components/recipe-gallery/recipe-gallery';
+import { ProfilePicture } from '../../../components/profile-picture/profile-picture';
+import { Rating } from '../../../components/rating/rating';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { IRecipeDetail } from '@recipe/shared';
+import { IRecipeCommentResponse } from '@recipe/shared';
 
 @Component({
   selector: 'app-view-recipe',
-  imports: [RouterLink, AsyncPipe, AddComment, TimeAgoPipe, RecipeGallery],
+  imports: [RouterLink, AddComment, TimeAgoPipe, RecipeGallery, ProfilePicture, DatePipe, Rating],
   templateUrl: './view-recipe.html',
   styleUrl: './view-recipe.scss',
 })
 export class ViewRecipe implements OnInit {
-  recipe$!: Observable<any>;
-  constructor(
-    private recipeService: RecipeService,
-    private route: ActivatedRoute,
-    private router: Router,
-  ) {}
-  ngOnInit(): void {
-    this.getRecipe();
+  private recipeService = inject(RecipeService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+
+  // Signal a route param-ra
+  private recipeId = toSignal(this.route.paramMap.pipe(map((params) => params.get('id') || '')));
+
+  // Signal a receptre a service-ből
+  // létrehozol egy üres signal-t
+  recipe = signal<IRecipeDetail | undefined>(undefined);
+  comments = signal<IRecipeCommentResponse[]>([]);
+
+  avgRating = signal(this.recipe()?.avgRating || 0); // kezdeti érték a recept értékelése, vagy 0, ha nincs
+
+  ngOnInit() {
+    this.loadRecipe();
   }
 
-  getRecipe() {
-    this.recipe$ = this.route.paramMap.pipe(
-      map((params) => params.get('id')),
-      switchMap((id) => {
-        if (!id) return EMPTY;
-        return this.recipeService.getRecipeWithComments(id).pipe(
-          catchError((err) => {
-            this.router.navigate(['/error']);
-            return EMPTY;
-          }),
-        );
-      }),
-    );
+  loadRecipe() {
+    this.recipeService
+      .getRecipeWithComments(this.recipeId() || '')
+      .pipe(
+        catchError(() => {
+          this.router.navigate(['/error']);
+          return EMPTY;
+        }),
+        //tap((res) => {}),
+      )
+      .subscribe((res) => {
+        this.recipe.set(res.recipe);
+        this.comments.set(res.comments);
+        this.avgRating.set(res.recipe.avgRating);
+      });
   }
-  onComment(state: boolean) {
-    this.getRecipe();
+
+  //Rating visszatöltése a backendről, pl. új értékelés után
+  loadRating() {}
+
+  // Computed view model
+  vm = computed(() => {
+    const recipe = this.recipe();
+
+    return {
+      recipe: this.recipe(),
+      hasRecipe: !!recipe,
+      comments: this.comments() ?? [],
+    };
+  });
+
+  constructor() {}
+
+  // Új komment esetén frissítés
+  onComment(_state: boolean) {
+    // újra lekéri a receptet
+    this.loadRecipe();
+    //this.loadComments(); majd később
+  }
+
+  onChangeRate(rate: { recipeId: string; rate: number }) {
+    this.recipeService.rateRecipe(rate.recipeId, rate.rate);
+    this.avgRating.set(rate.rate); // frissíti a jelzett értékelést
+
+    this.loadRecipe();
   }
 }

@@ -18,6 +18,7 @@ export class ToastService {
     };
 
     this.toasts$.next([...this.toasts$.value, newToast]);
+    /*eslint no-undef: "error"*/
 
     setTimeout(() => {
       this.remove(newToast.id);

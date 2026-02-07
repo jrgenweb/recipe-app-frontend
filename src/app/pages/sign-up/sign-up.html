@@ -1,8 +1,9 @@
-<div class="register-form mt-5 col-md-8 offset-2">
+<div class="register-form mt-5 col-md-8 offset-md-2">
   <h2>Regisztráció</h2>
   @let email = signUpForm.get('email');
   <!--@let firstname = signUpForm.get('firstname');
   @let lastname = signUpForm.get('lastname');-->
+  @let picture = signUpForm.get('picture');
   @let name = signUpForm.get('name');
   @let password = signUpForm.get('password');
   @let confirmpassword = signUpForm.get('confirmpassword');
@@ -26,6 +27,26 @@
     </div>
 
     <div class="row">
+      <div class="mb-3">
+        <label for="picture" class="form-label">Profil kép</label>
+        <input
+          type="text"
+          class="form-control"
+          name="name"
+          id="picture"
+          formControlName="picture"
+          aria-describedby="pictureHelpId"
+          placeholder=""
+          [class.is-invalid]="picture?.invalid && picture?.dirty"
+          [class.is-valid]="picture?.valid && picture?.dirty"
+        />
+
+        @if (picture?.getError('invalidImageUrl')) {
+          <small id="pictureHelpId" class="form-text text-danger"
+            >Érvényes profil kép url-t adj meg</small
+          >
+        }
+      </div>
       <div class="mb-3">
         <label for="name" class="form-label">Név</label>
         <input

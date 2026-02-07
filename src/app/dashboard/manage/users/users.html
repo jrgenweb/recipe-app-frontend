@@ -1,0 +1,102 @@
+<button class="btn btn-primary d-block ms-auto mt-3" routerLink="/dashboard/manage/users/add">
+  <i class="bi bi-plus"></i>
+  Hozzáadás
+</button>
+
+<div class="bg-light p-2 rounded-2 shadow-sm my-3 row">
+  <div class="col-12 col-md-6 mb-3">
+    <div class="form-floating">
+      <input
+        type="text"
+        class="form-control"
+        name="nameInput"
+        id="nameInput"
+        placeholder=""
+        (input)="changeNameSearch($event.target.value)"
+      />
+      <label for="nameInput">Név:</label>
+    </div>
+  </div>
+  <div class="col-12 col-md-6 mb-3">
+    <div class="form-floating">
+      <input
+        type="text"
+        class="form-control"
+        name="emailInput"
+        id="emailInput"
+        placeholder=""
+        (input)="changeEmailSearch($event.target.value)"
+      />
+      <label for="emailInput">Email:</label>
+    </div>
+  </div>
+</div>
+
+@if (!vm().loading && vm().hasResults) {
+  <div class="table-responsive">
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Név</th>
+          <th>Email</th>
+          <th class="text-center">Jogosultság</th>
+          <th class="text-center">Receptek</th>
+          <th class="text-center">Szavazas</th>
+          <th class="text-center">Kommentek</th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (user of vm().users; track user.id) {
+          <tr>
+            <td><app-profile-picture size="md" [src]="user.picture"></app-profile-picture></td>
+            <td>
+              {{ user.name }}
+            </td>
+            <td>
+              {{ user.email }}
+            </td>
+            <td class="text-center">
+              <span
+                class="badge rounded-pill text-bg-primary"
+                [class.text-bg-danger]="user.role === 'ADMIN'"
+                [class.text-bg-info]="user.role === 'USER'"
+                >{{ user?.role }}</span
+              >
+            </td>
+            <td class="text-center">{{ user._count.ratings }}</td>
+            <td class="text-center">{{ user._count.recipes }}</td>
+            <td class="text-center">{{ user._count.comments }}</td>
+            <td>{{ user.createdAt | date: 'yyyy. MM. dd.' }}</td>
+            <td class="fs-4">
+              <a routerLink="/dashboard/manage/users/edit/{{ user.id }}"
+                ><i class="bi bi-pencil text-success me-3"></i
+              ></a>
+              <a href="#"
+                ><i
+                  class="bi bi-trash text-danger"
+                  (click)="showDeleteConfirm(user); $event.preventDefault()"
+                ></i
+              ></a>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+} @else if (vm().loading) {
+  <app-spinner></app-spinner>
+}
+
+<app-infinite-scroll (loadMore)="loadMore(inf)" #inf></app-infinite-scroll>
+<app-confirm-modal
+  [title]="'Törlés megerősítése'"
+  [isOpen]="isConfirmModalShow"
+  (confirmEvt)="onConfirmModal($event)"
+>
+  <p>
+    Biztosan törölni szeretnéd a <b>{{ selectedUser?.name }}</b> felhasználót?
+  </p>
+</app-confirm-modal>

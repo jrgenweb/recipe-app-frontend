@@ -1,5 +1,5 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
 import { API_URL } from '../../config/config';
 
 import { BehaviorSubject } from 'rxjs';
@@ -12,18 +12,45 @@ import { ToastService } from './toast-service';
 export class CategoryService {
   categories$ = new BehaviorSubject<IRecipeCategory[]>([]);
 
-  constructor(
-    private http: HttpClient,
-    private toastService: ToastService,
-  ) {}
+  isLoading = false;
+  total?: number;
+  pageSize = 10;
 
+  private http: HttpClient = inject(HttpClient);
+  private toastService: ToastService = inject(ToastService);
+  constructor() {}
+
+  loadNext(search?: string) {
+    if (this.isLoading) return;
+    if (this.total && this.categories$.value.length >= this.total) return;
+    this.isLoading = true;
+    const skip = this.categories$.value.length;
+    const take = this.pageSize;
+
+    let params = new HttpParams().set('skip', skip).set('take', take);
+    if (search) params = params.set('search', String(search));
+
+    this.http
+      .get<{ data: IRecipeCategory[]; total: number }>(API_URL + '/categories', {
+        params,
+      })
+      .subscribe((resp) => {
+        this.categories$.next([...this.categories$.value, ...resp.data]);
+        this.total = resp.total;
+        this.isLoading = false;
+        //inf?.done();
+      });
+  }
+  reset() {
+    this.categories$.next([]);
+    this.total = undefined;
+  }
   getAll() {
     return this.http.get<IRecipeCategoryResponse>(API_URL + '/categories').subscribe({
       next: (resp) => {
         this.categories$.next(resp.data);
       },
-      error: (err) => {
-        console.error(err);
+      error: (_err) => {
         this.toastService.add({ message: 'Szerver hiba', type: 'danger' });
       },
     });
@@ -35,7 +62,6 @@ export class CategoryService {
         const oldCategories = [...this.categories$.value];
         oldCategories.push(resp);
         this.categories$.next(oldCategories);
-
         this.toastService.add({ message: 'Sikeresen hozzáadtad a kategóriát!', type: 'primary' });
       });
   }
@@ -54,7 +80,7 @@ export class CategoryService {
   update(category: IRecipeCategory) {
     this.http
       .patch<IRecipeCategory>(API_URL + '/categories/' + category.id, { name: category.name })
-      .subscribe((resp) => {
+      .subscribe((_resp) => {
         /* const oldCategories = [...this.categories$.value];
         oldCategories.push(resp);
         this.categories$.next(oldCategories); */

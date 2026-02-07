@@ -1,59 +1,96 @@
-import { Component, HostListener, OnInit } from '@angular/core';
-import { RecipeFilter } from '../../components/recipe/recipe-filter/recipe-filter';
-import { RecipeService } from '../../shared/services/recipe-service';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 
-import { AsyncPipe } from '@angular/common';
+import { RecipeService } from '../../shared/services/recipe-service';
 
 import { FavoriteService } from '../../shared/services/favorite-service';
 import { AuthService } from '../../shared/services/auth-service';
 import { RecipeCard } from '../../components/recipe-card/recipe-card';
-import { InfiniteScrollComponent } from '../../components/infinite-scroll-component/infinite-scroll-component';
+
+import { SelectIngredient } from '../../components/select-ingredient/select-ingredient';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { IRecipeIngredient } from '@recipe/shared';
+import { RecipeFilter } from '../../components/recipe-filter/recipe-filter';
+import { InfiniteScroll } from '../../components/infinite-scroll/infinite-scroll';
 
 @Component({
   selector: 'app-recipes',
-  imports: [RecipeFilter, AsyncPipe, RecipeCard, InfiniteScrollComponent],
+  imports: [RecipeFilter, RecipeCard, InfiniteScroll, SelectIngredient],
   templateUrl: './recipes.html',
   styleUrl: './recipes.scss',
 })
 export class Recipes implements OnInit {
-  categoryId: string = '';
-  cuisinId: string = '';
-  searchString: string = '';
+  // Signals a filter state-re
+  categoryId = signal('');
+  cuisinId = signal('');
+  searchString = signal('');
 
-  constructor(
-    public recipeService: RecipeService,
-    public favoriteService: FavoriteService,
-    public authService: AuthService,
-  ) {}
-  ngOnInit(): void {
+  //Services
+  private recipeService = inject(RecipeService);
+  private favoriteService = inject(FavoriteService);
+  private authService = inject(AuthService);
+
+  recipes = toSignal(this.recipeService.recipes$, { initialValue: { data: [], total: 0 } });
+  favoriteRecipeIds = toSignal(this.favoriteService.favoriteIds$, { initialValue: [] });
+  ingredientIds = signal<string[]>([]);
+
+  // Computed view model
+  vm = computed(() => ({
+    categoryId: this.categoryId(),
+    cuisinId: this.cuisinId(),
+    searchString: this.searchString(),
+    recipes: this.recipes(),
+    favoriteRecipes: this.favoriteRecipeIds(),
+    loading: this.recipeService.loading,
+    hasResults: this.recipeService.recipes$.value.data?.length > 0,
+  }));
+
+  // 🔥 Effect a filter változásokra
+  private filterEffect = effect(() => {
+    this.categoryId();
+    this.cuisinId();
+    this.searchString();
+    this.ingredientIds();
+
+    // minden változáskor reset + loadNext
     this.recipeService.reset();
     this.loadNext();
+  });
+
+  constructor() {}
+
+  ngOnInit(): void {
+    // Alapadatok
     this.favoriteService.getAll();
   }
 
+  loadMore(inf: InfiniteScroll) {
+    this.loadNext();
+  }
+  // LoadNext mindig signalsból hívható
   loadNext() {
-    this.recipeService.loadNext(this.searchString, this.categoryId, this.cuisinId);
+    this.recipeService.loadNext(
+      this.searchString(),
+      this.categoryId(),
+      this.cuisinId(),
+      this.ingredientIds(),
+    );
   }
 
-  onScroll(scroll: boolean) {
-    if (scroll) {
-      this.loadNext();
-    }
-  }
-
+  // Setterek – ez triggereli az effect-et
   changeCategory(categoryId: string) {
-    this.categoryId = categoryId;
-    this.recipeService.reset();
-    this.loadNext();
+    this.categoryId.set(categoryId);
   }
+
   changeCuisin(cuisinId: string) {
-    this.cuisinId = cuisinId;
-    this.recipeService.reset();
-    this.loadNext();
+    this.cuisinId.set(cuisinId);
   }
+
   changeSearchString(searchString: string) {
-    this.searchString = searchString;
-    this.recipeService.reset();
-    this.loadNext();
+    this.searchString.set(searchString);
+  }
+
+  onChangeIngredient(ingredients: IRecipeIngredient[]) {
+    const ingredientIds = ingredients.map((i) => i.id);
+    this.ingredientIds.set(ingredientIds);
   }
 }

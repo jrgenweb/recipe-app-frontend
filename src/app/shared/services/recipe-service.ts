@@ -1,18 +1,20 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { API_URL } from '../../config/config';
-import { BehaviorSubject, delay, forkJoin, interval, Observable, tap, timeout } from 'rxjs';
+import { BehaviorSubject, delay, forkJoin, map, tap } from 'rxjs';
 import { RatingService } from './rating-service';
 
 import { IUpdateRecipe } from '../interfaces/update-recipe.interface';
 import {
-  IRecipeList,
   IRecipeListResponse,
   ISetRatingResponse,
   ICreateRecipe,
+  IRecipeDetail,
+  IRecipeCommentResponse,
 } from '@recipe/shared';
-import { IRecipeDetail } from '@recipe/shared';
 import { ToastService } from './toast-service';
+
+//import { ToastService } from './toast-service';
 
 @Injectable({
   providedIn: 'root',
@@ -24,11 +26,10 @@ export class RecipeService {
   pageSize = 20;
   total = 0;
 
-  constructor(
-    private http: HttpClient,
-    private ratingService: RatingService,
-    private toastService: ToastService,
-  ) {}
+  private http = inject(HttpClient);
+  private ratingService = inject(RatingService);
+  private toastService = inject(ToastService);
+  constructor() {}
 
   getAllRecipes(search?: string, categoryId?: string) {
     let params = new HttpParams();
@@ -36,12 +37,18 @@ export class RecipeService {
     if (search) params = params.set('search', String(search));
 
     this.http.get<IRecipeListResponse>(API_URL + '/recipes', { params }).subscribe((resp) => {
-      console.log(resp);
+      //console.log(resp);
       this.recipes$.next(resp);
     });
   }
 
-  loadNext(search?: string, categoryId?: string, cuisinId?: string, own = false) {
+  loadNext(
+    search?: string,
+    categoryId?: string,
+    cuisinId?: string,
+    ingredientIds?: string[],
+    own = false,
+  ) {
     if (this.loading) return;
     if (this.total && this.recipes$.value.data.length >= this.total) return;
     this.loading = true;
@@ -52,6 +59,9 @@ export class RecipeService {
 
     if (categoryId && categoryId !== 'all') params = params.set('categoryId', String(categoryId));
     if (cuisinId && cuisinId !== 'all') params = params.set('cuisinId', String(cuisinId));
+    if (ingredientIds && ingredientIds.length > 0) {
+      params = params.set('ingredientIds', ingredientIds.join(','));
+    }
 
     if (search) params = params.set('search', String(search));
     params = params.set('skip', skip);
@@ -62,8 +72,6 @@ export class RecipeService {
       .pipe(delay(500))
       .subscribe(
         (resp) => {
-          console.log(resp);
-
           const updatedRecipes = {
             data: [...this.recipes$.value.data, ...resp.data],
             total: resp.total, // vagy: Math.max(this.recipes$.value.total, resp.total)
@@ -104,12 +112,13 @@ export class RecipeService {
   }
   getRecipeWithComments(id: string) {
     return forkJoin({
-      recipe: this.http.get<any>(API_URL + '/recipes/' + id),
-      comments: this.http.get<any[]>(API_URL + '/recipes/' + id + '/comments'),
+      recipe: this.http.get<IRecipeDetail>(API_URL + '/recipes/' + id),
+      comments: this.http.get<{ data: IRecipeCommentResponse[] }>(
+        API_URL + '/recipes/' + id + '/comments',
+      ),
     }).pipe(
-      tap((resp) => {
-        console.log(resp);
-      }),
+      map((res) => ({ recipe: res.recipe, comments: res.comments.data })),
+      tap(() => {}),
     );
   }
   //recipes/:recipeId/ratings
@@ -138,13 +147,13 @@ export class RecipeService {
             data: updatedRecipes,
           });
         },
-        error: (err) => {
-          console.error(err);
+        error: () => {
+          //console.error(err);
         },
       });
   }
   create(recipe: ICreateRecipe) {
-    this.http.post(API_URL + '/recipes', { ...recipe }).subscribe((resp) => {
+    this.http.post(API_URL + '/recipes', { ...recipe }).subscribe(() => {
       this.toastService.add({ message: 'Sikeresen hozzáadtad a receptet', type: 'success' });
     });
   }
@@ -165,7 +174,7 @@ export class RecipeService {
     });
   }
   update(recipeId: string, recipe: IUpdateRecipe) {
-    this.http.patch(API_URL + '/recipes/' + recipeId, { ...recipe }).subscribe((resp) => {
+    this.http.patch(API_URL + '/recipes/' + recipeId, { ...recipe }).subscribe(() => {
       this.toastService.add({ message: 'Sikeresen szerkesztetted a receptet', type: 'success' });
     });
   }

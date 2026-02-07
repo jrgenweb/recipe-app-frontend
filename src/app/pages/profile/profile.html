@@ -10,10 +10,10 @@
       role="tab"
       aria-controls="profile"
       aria-selected="false"
-      routerLink="/profile/favorites"
+      routerLink="/profile/recipes"
       routerLinkActive="active"
     >
-      Kedvencek
+      Receptjeim
     </button>
   </li>
   <li class="nav-item" role="presentation">
@@ -26,12 +26,13 @@
       role="tab"
       aria-controls="profile"
       aria-selected="false"
-      routerLink="/profile/manager"
+      routerLink="/profile/favorites"
       routerLinkActive="active"
     >
-      Kezelés
+      Kedvencek
     </button>
   </li>
+
   <li class="nav-item" role="presentation">
     <button
       class="nav-link"
@@ -62,6 +63,22 @@
       routerLinkActive="active"
     >
       Jelszó megváltoztatása
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button
+      class="nav-link text-danger"
+      id="profile-tab"
+      data-bs-toggle="tab"
+      data-bs-target="#profile"
+      type="button"
+      role="tab"
+      aria-controls="profile"
+      aria-selected="false"
+      routerLink="/profile/delete-profile"
+      routerLinkActive="active"
+    >
+      Profil törlése
     </button>
   </li>
 </ul>

@@ -3,7 +3,7 @@ export interface IRecipeDetail {
   name: string;
   description: string;
   userId: string;
-  creatadAt: string;
+  createdAt: string;
   updatedAt: string;
   recipeImages: IRecipeImage[];
 }

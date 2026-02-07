@@ -1,0 +1,22 @@
+<div class="col-12 col-md-6 offset-md-3 mt-5">
+  <h2 class="text-center">Profil törlése</h2>
+  <div class="my-4">
+    <label for="password" class="form-label">Jelszó</label>
+    <input
+      type="password"
+      class="form-control"
+      name="password"
+      id="password"
+      aria-describedby="passwordHelpId"
+      placeholder=""
+      [(ngModel)]="password"
+    />
+    <small id="passwordHelpId" class="form-text text-muted"
+      >A profilod törléséhez add meg a jelszavad</small
+    >
+  </div>
+
+  <button class="btn btn-lg btn-danger d-block mx-auto" [disabled]="!password" (click)="onDelete()">
+    Profil törlése
+  </button>
+</div>

@@ -1,0 +1,152 @@
+<div class="add-user-form mt-5 col-md-8 offset-md-2">
+  <h2>{{ isEditMode() ? 'Felhasználó szerkesztése' : 'Felhasználó hozzáadása' }}</h2>
+
+  {{ user()?.email }}
+  @let email = addUserForm.get('email');
+  @let picture = addUserForm.get('picture');
+  @let name = addUserForm.get('name');
+  @let role = addUserForm.get('role');
+  @let password = addUserForm.get('password');
+  @let confirmpassword = addUserForm.get('confirmpassword');
+
+  @if (serverError) {
+    <div class="alert alert-danger mb-3">{{ serverError }}</div>
+  }
+
+  <form [formGroup]="addUserForm" (ngSubmit)="onSubmit()">
+    <div class="mb-3">
+      <label for="email" class="form-label">Email cím</label>
+      <input
+        type="email"
+        class="form-control"
+        name="email"
+        id="email"
+        formControlName="email"
+        aria-describedby="emailHelpId"
+        placeholder="email@mail.com"
+        [class.is-invalid]="email?.invalid && email?.dirty"
+        [class.is-valid]="email?.valid && email?.dirty"
+      />
+      @if (email?.dirty && email?.invalid) {
+        <small id="emailHelpId" class="form-text text-danger">Érvénytelen email cím</small>
+      }
+    </div>
+
+    <div class="row">
+      <div class="mb-3">
+        <label for="picture" class="form-label">Profil kép</label>
+        <input
+          type="text"
+          class="form-control"
+          name="picture"
+          id="picture"
+          formControlName="picture"
+          aria-describedby="pictureHelpId"
+          placeholder="https://example.com/image.jpg"
+          [class.is-invalid]="picture?.invalid && picture?.dirty"
+          [class.is-valid]="picture?.valid && picture?.dirty"
+        />
+
+        @if (picture?.getError('invalidImageUrl')) {
+          <small id="pictureHelpId" class="form-text text-danger"
+            >Érvényes profil kép url-t adj meg</small
+          >
+        }
+      </div>
+      <div class="mb-3">
+        <label for="name" class="form-label">Név</label>
+        <input
+          type="text"
+          class="form-control"
+          name="name"
+          id="name"
+          formControlName="name"
+          aria-describedby="nameHelpId"
+          placeholder="Teljes név"
+          [class.is-invalid]="name?.invalid && name?.dirty"
+          [class.is-valid]="name?.valid && name?.dirty"
+        />
+
+        @if (name?.dirty && name?.invalid) {
+          <small id="nameHelpId" class="form-text text-danger">A név megadása kötelező</small>
+        }
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="role" class="form-label">Szerep</label>
+      <select
+        class="form-select"
+        name="role"
+        id="role"
+        formControlName="role"
+        [class.is-invalid]="role?.invalid && role?.dirty"
+        [class.is-valid]="role?.valid && role?.dirty"
+      >
+        <option value="USER">Felhasználó</option>
+        <option value="ADMIN">Adminisztrátor</option>
+      </select>
+      @if (role?.dirty && role?.invalid) {
+        <small class="form-text text-danger">A szerep megadása kötelező</small>
+      }
+    </div>
+
+    <div class="row">
+      <div class="col-6">
+        <div class="mb-3">
+          <label for="password" class="form-label">Jelszó</label>
+          <input
+            type="password"
+            class="form-control"
+            name="password"
+            id="password"
+            formControlName="password"
+            aria-describedby="passwordHelpId"
+            placeholder=""
+            [class.is-invalid]="password?.invalid && password?.dirty"
+            [class.is-valid]="password?.valid && password?.dirty"
+          />
+          @if (password?.dirty && password?.invalid) {
+            <small id="passwordHelpId" class="form-text text-danger"
+              >A jelszónak legalább 6 karakter hosszúnak kell lennie</small
+            >
+          }
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="mb-3">
+          <label for="confirmpassword" class="form-label">Jelszó megerősítése</label>
+          <input
+            type="password"
+            class="form-control"
+            name="confirmpassword"
+            id="confirmpassword"
+            formControlName="confirmpassword"
+            aria-describedby="confirmpasswordHelpId"
+            placeholder=""
+            [class.is-invalid]="
+              (confirmpassword?.invalid && confirmpassword?.dirty) ||
+              addUserForm.getError('passwordMismatch')
+            "
+            [class.is-valid]="confirmpassword?.valid && confirmpassword?.dirty"
+          />
+          @if (confirmpassword?.dirty && confirmpassword?.invalid) {
+            <small id="confirmpasswordHelpId" class="form-text text-danger">Hibás jelszó</small>
+          }
+          @if (addUserForm.getError('passwordMismatch')) {
+            <small id="confirmpasswordHelpId" class="form-text text-danger"
+              >A jelszavak nem egyeznek</small
+            >
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-4">
+      <button type="submit" class="btn btn-primary" [disabled]="addUserForm.invalid">
+        {{ isEditMode() ? 'Mentés' : 'Hozzáadás' }}
+      </button>
+      <a href="/dashboard/manage/users" class="btn btn-secondary"> Mégse </a>
+    </div>
+  </form>
+</div>

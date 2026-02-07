@@ -1,0 +1,78 @@
+<button class="btn btn-primary d-block ms-auto mt-3" (click)="openAddCategoryModal()">
+  <i class="bi bi-plus"></i>
+  Hozzáadás
+</button>
+
+<div class="bg-light p-2 rounded-2 shadow-sm my-3">
+  <div class="form-floating">
+    <input
+      type="text"
+      class="form-control"
+      name="searchInput"
+      id="searchInput"
+      placeholder=""
+      (input)="changeSearchString($event.target.value)"
+    />
+    <label for="searchInput">Keresés</label>
+  </div>
+</div>
+@if (vm().loading) {
+  <app-spinner></app-spinner>
+} @else if (!vm().loading && !vm().hasResults) {
+  <p class="text-center my-3 p-2">Nincs találat</p>
+} @else {
+  <div class="table-responsive">
+    <table class="table table-hover table-striped">
+      <thead>
+        <tr>
+          <th>Kategória neve</th>
+          <th class="text-center">Műveletek</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (category of vm().categories; track $index) {
+          <tr>
+            <td>
+              {{ category.name }}
+            </td>
+            <td class="text-center">
+              <button
+                class="btn-sm btn rounded-circle btn-danger me-2"
+                (click)="showDeleteConfirm(category)"
+              >
+                <i class="bi bi-trash"></i>
+              </button>
+              <button
+                class="btn-sm btn rounded-circle btn-success"
+                (click)="openAddCategoryModal(category)"
+              >
+                <i class="bi bi-pencil"></i>
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+<app-infinite-scroll #inf (loadMore)="loadMore(inf)"></app-infinite-scroll>
+<app-add-category-modal
+  [isOpen]="isOpenAddCategoryModal"
+  [category]="selectedCategory"
+  (confirmEvt)="isOpenAddCategoryModal = false"
+></app-add-category-modal>
+
+<app-confirm-modal
+  [isOpen]="isConfirmModalShow"
+  title="Törlés megerősítése"
+  (confirmEvt)="onDeleteConfirm($event)"
+  [type]="'danger'"
+  [btnConfirmTitle]="'Törlés'"
+  [btnCloseTitle]="'Mégse'"
+>
+  <h3>
+    Biztosan törölni szeretnéd a <b>{{ selectedCategory?.name }}</b
+    >?
+  </h3>
+</app-confirm-modal>

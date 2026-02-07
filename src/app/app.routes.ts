@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { Recipes } from './pages/recipes/recipes';
 
-import { Recipes as RecipesManager } from './pages/profile/manager/recipes/recipes';
+import { Recipes as RecipesManager } from './pages/profile/recipes/recipes';
 import { Error } from './pages/error/error';
 import { SignIn } from './pages/sign-in/sign-in';
 import { SignUp } from './pages/sign-up/sign-up';
@@ -10,17 +10,29 @@ import { ViewRecipe } from './pages/recipes/view-recipe/view-recipe';
 import { Profile } from './pages/profile/profile';
 
 import { Favorites } from './pages/profile/favorites/favorites';
-import { Manager } from './pages/profile/manager/manager';
-import { Categories } from './pages/profile/manager/categories/categories';
-import { Ingredients } from './pages/profile/manager/ingredients/ingredients';
-import { AddRecipe } from './pages/profile/manager/recipes/add-recipe/add-recipe';
+
+import { AddRecipe } from './pages/profile/recipes/add-recipe/add-recipe';
 import { AuthGuard } from './shared/guards/auth.guard';
 import { GuestGuard } from './shared/guards/ghuest.guard';
 import { General } from './pages/profile/general/general';
 import { Changepassword } from './pages/profile/changepassword/changepassword';
-import { AdminGuard } from './shared/guards/admin.guard';
+
 import { Pages } from './pages/pages';
 import { Dashboard } from './dashboard/dashboard';
+import { roleGuard } from './shared/guards/role.guard';
+import { Delete } from './pages/profile/delete/delete';
+import { Summary } from './dashboard/summary/summary';
+
+import { SignIn as AdminSignIn } from './dashboard/sign-in/sign-in';
+import { Ingredients as AdminIngredients } from './dashboard/manage/ingredients/ingredients';
+import { Categories as AdminCategories } from './dashboard/manage/categories/categories';
+import { Recipes as AdminRecipes } from './dashboard/manage/recipes/recipes';
+import { AddRecipe as AdminAddRecipe } from './dashboard/manage/recipes/add-recipe/add-recipe';
+import { Manage } from './dashboard/manage/manage';
+import { Users as AdminUsers } from './dashboard/manage/users/users';
+import { AddUser as AdminAddUser } from './dashboard/manage/users/add-user/add-user';
+import { Cuisines as AdminCuisines } from './dashboard/manage/cuisines/cuisines';
+import { Role } from '@recipe/shared';
 
 export const routes: Routes = [
   {
@@ -45,26 +57,17 @@ export const routes: Routes = [
           { path: '', redirectTo: 'general', pathMatch: 'full' }, // alapértelmezett tab
           { path: 'general', component: General },
           { path: 'change-password', component: Changepassword },
+          { path: 'delete-profile', component: Delete },
           { path: 'favorites', component: Favorites },
-
-          // Manager aloldalak
           {
-            path: 'manager',
-            component: Manager,
+            path: 'recipes',
             children: [
-              { path: '', redirectTo: 'recipes', pathMatch: 'full' },
-              {
-                path: 'recipes',
-                children: [
-                  { path: '', component: RecipesManager },
-                  { path: 'add', component: AddRecipe },
-                  { path: 'edit/:id', component: AddRecipe },
-                ],
-              },
-              { path: 'categories', component: Categories },
-              { path: 'ingredients', component: Ingredients },
+              { path: '', component: RecipesManager },
+              { path: 'add', component: AddRecipe },
+              { path: 'edit/:id', component: AddRecipe },
             ],
           },
+          // Manager aloldalak
         ],
       },
 
@@ -74,6 +77,52 @@ export const routes: Routes = [
       { path: '', redirectTo: '/recipes', pathMatch: 'full' },
     ],
   },
-  { path: 'dashboard', component: Dashboard },
+
+  { path: 'dashboard/signin', component: AdminSignIn },
+
+  {
+    path: 'dashboard',
+    component: Dashboard,
+    canActivate: [roleGuard],
+    data: { role: Role.ADMIN },
+    children: [
+      { path: '', redirectTo: 'summary', pathMatch: 'full' },
+      {
+        path: 'summary',
+        component: Summary,
+      },
+
+      {
+        path: 'manage',
+        component: Manage,
+        children: [
+          { path: '', redirectTo: 'users', pathMatch: 'full' },
+          {
+            path: 'users',
+            children: [
+              { path: '', component: AdminUsers },
+              { path: 'add', component: AdminAddUser },
+              { path: 'edit/:id', component: AdminAddUser },
+            ],
+          },
+          {
+            path: 'recipes',
+
+            children: [
+              { path: '', component: AdminRecipes },
+              { path: 'add', component: AdminAddRecipe },
+              { path: 'edit/:id', component: AdminAddRecipe },
+            ],
+          },
+          { path: 'categories', component: AdminCategories },
+          { path: 'ingredients', component: AdminIngredients },
+          { path: 'cuisines', component: AdminCuisines },
+        ],
+      },
+      { path: 'error', component: Error },
+      { path: '**', redirectTo: 'error', pathMatch: 'full' },
+    ],
+  },
+
   { path: '**', redirectTo: '/error', pathMatch: 'full' },
 ];

@@ -8,7 +8,7 @@
         class="bi"
         [class.bi-star-fill]="star <= displayRating"
         [class.bi-star]="star > displayRating"
-        [class.disabled]="disabled"
+        [class.disabled]="!!disabled"
         (click)="!disabled && setRating(star)"
         (mouseover)="!disabled && onHover(star)"
       ></i>

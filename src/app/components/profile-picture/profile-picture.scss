@@ -1,0 +1,19 @@
+.profile-picture {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    outline: 2px solid #000;
+    &.md {
+        width: 32px;
+        height: 32px;
+    }
+    &.sm {
+        width: 24px;
+        height: 24px;
+    }
+    &.lg {
+        width: 48px;
+        height: 48px;
+    }
+}

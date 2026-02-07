@@ -1,0 +1,36 @@
+<div class="my-5" style="height: 100% !important">
+  <h2 class="text-center">Admin Felület</h2>
+  <div class="login-form col-12 col-md-4 offset-md-4 bg-body-secondary p-3 rounded-2 shadow-lg">
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <h2 class="text-center mb-4">Belépés</h2>
+      <div class="form-floating mb-3">
+        <input
+          type="email"
+          class="form-control"
+          name="email"
+          id="email"
+          placeholder=""
+          formControlName="email"
+        />
+        <label for="email">Email</label>
+      </div>
+      <div class="form-floating mb-3">
+        <input
+          type="password"
+          class="form-control"
+          name="password"
+          id="password"
+          placeholder=""
+          formControlName="password"
+        />
+        <label for="password">Jelszó</label>
+      </div>
+      @if (invalidLogin()) {
+        <small class="form-text text-danger text-center mb-2 d-block"
+          >Hibás felhasználónév vagy jelszó!</small
+        >
+      }
+      <button class="btn btn-success btn-lg w-100">Belépés</button>
+    </form>
+  </div>
+</div>
