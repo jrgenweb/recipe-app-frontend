@@ -9,7 +9,8 @@ import { ConfirmModal } from '../../../../components/confirm-modal/confirm-modal
 import { AddCategoryModal } from '../../../../features/admin/features/categories/components/add-category-modal/add-category-modal';
 import { InfiniteScroll } from '../../../../components/infinite-scroll/infinite-scroll';
 import { Spinner } from '../../../../components/spinner/spinner';
-import { CategoryService } from '../../../../features/admin/features/categories/services/category-service';
+
+import { AdminCategoryStore } from '../../../../features/admin/features/categories/stores/admin-category.store';
 
 @Component({
   selector: 'app-categories',
@@ -21,29 +22,24 @@ export class Categories {
   isConfirmModalShow = false;
   isOpenAddCategoryModal = false;
   selectedCategory?: IRecipeCategory;
-  public categoryService: CategoryService = inject(CategoryService);
-
-  categories = toSignal(this.categoryService.categories$, { initialValue: [] });
+  public store: AdminCategoryStore = inject(AdminCategoryStore);
 
   isShowDeleteConfirm = signal(false);
   searchString = signal('');
   scrollSignal = signal(false);
 
   // Computed view model
-  vm = computed(() => ({
-    searchString: this.searchString(),
-    categories: this.categories(),
-    loading: this.categoryService.isLoading,
-    hasResults: this.categories().length > 0,
-  }));
-  private filterEffect = effect(() => {
+
+  private changeFilter() {
     this.searchString();
-    this.categoryService.reset();
-    this.loadNext();
-  });
+    this.store.reset();
+    this.store.loadAll();
+  }
 
-  constructor() {}
-
+  constructor() {
+    this.store.loadAll();
+  }
+  /* 
   loadMore(inf: InfiniteScroll) {
     this.loadNext(inf);
     inf.done();
@@ -53,7 +49,7 @@ export class Categories {
     if (!this.categoryService.isLoading) {
       inf?.done();
     }
-  }
+  } */
   changeSearchString(searchString: string) {
     this.searchString.set(searchString);
   }
@@ -63,7 +59,7 @@ export class Categories {
   }
   onDeleteConfirm(state: boolean) {
     if (state && this.selectedCategory) {
-      this.categoryService.delete(this.selectedCategory.id);
+      this.store.delete(this.selectedCategory.id);
     }
     this.isConfirmModalShow = false;
   }

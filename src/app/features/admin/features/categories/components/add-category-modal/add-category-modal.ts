@@ -16,7 +16,7 @@ import {
 } from '@angular/forms';
 
 import { IRecipeCategory } from '@recipe/shared';
-import { CategoryService } from '../../services/category-service';
+import { AdminCategoryStore } from '../../stores/admin-category.store';
 
 @Component({
   selector: 'app-add-category-modal',
@@ -30,7 +30,7 @@ export class AddCategoryModal implements OnChanges {
   @Input() isOpen = false;
   @Output() confirmEvt = new EventEmitter<boolean>();
 
-  private categoryService: CategoryService = inject(CategoryService);
+  private store: AdminCategoryStore = inject(AdminCategoryStore);
 
   constructor() {}
   ngOnChanges(changes: SimpleChanges): void {
@@ -54,11 +54,11 @@ export class AddCategoryModal implements OnChanges {
       this.isOpen = false;
       if (this.category) {
         this.category.name = categoryName;
-        this.categoryService.update(this.category);
+        this.store.update(this.category);
       } else {
         //add
 
-        this.categoryService.create(categoryName);
+        this.store.create(categoryName);
       }
     }
     this.category = undefined;

@@ -1,17 +1,10 @@
-<!--<nav aria-label="breadcrumb">
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a routerLink="/">Főoldal</a></li>
-    <li class="breadcrumb-item"><a routerLink="/profile">Profilom</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Kedvenceim</li>
-  </ol>
-</nav>-->
-
-@let favorites = favoriteService.favorites$ | async;
-
 <div class="row mt-5">
-  @for (favorite of favorites?.data; track $index) {
+  @for (favorite of recipeStore.favoriteRecipes(); track $index) {
     <div class="col-6 col-md-4 col-lg-3 mb-3">
-      <app-recipe-card [recipe]="favorite.recipe" [isFavorite]="true"> </app-recipe-card>
+      <app-recipe-card-favorite
+        [recipe]="favorite.recipe"
+        [isFavorite]="true"
+      ></app-recipe-card-favorite>
     </div>
   } @empty {
     <p class="text-center my-3">Nincsenek kedvencek</p>

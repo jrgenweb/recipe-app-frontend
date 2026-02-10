@@ -57,7 +57,7 @@
           recipeForm.get('cuisineId')?.dirty && recipeForm.get('cuisineId')?.invalid
         "
       >
-        @for (cuisin of cuisinService.cuisines$ | async; track $index) {
+        @for (cuisin of cuisinStore.cuisines(); track cuisin.id) {
           <option [value]="cuisin.id">{{ cuisin.name }}</option>
         }
       </select>
@@ -84,7 +84,7 @@
           recipeForm.get('categoryIds')?.dirty && recipeForm.get('categoryIds')?.invalid
         "
       >
-        @for (category of categoryService.categories$ | async; track $index) {
+        @for (category of categoryStore.categories(); track $index) {
           <option [value]="category.id">{{ category.name }}</option>
         }
       </select>

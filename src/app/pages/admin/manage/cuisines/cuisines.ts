@@ -5,10 +5,8 @@ import { InfiniteScroll } from '../../../../components/infinite-scroll/infinite-
 import { ConfirmModal } from '../../../../components/confirm-modal/confirm-modal';
 import { Spinner } from '../../../../components/spinner/spinner';
 import { AddCuisinModal } from '../../../../features/admin/features/cuisines/components/add-cuisin-modal/add-cuisin-modal';
-import {
-  CuisinService,
-  ICuisin,
-} from '../../../../features/admin/features/cuisines/services/cuisine-service';
+import { ICuisin } from '../../../../features/admin/features/cuisines/services/admin-cuisine-service';
+import { AdminCuisineStore } from '../../../../features/admin/features/cuisines/stores/admin-cuisine.store';
 
 @Component({
   selector: 'app-cuisines',
@@ -21,52 +19,34 @@ export class Cuisines implements OnInit {
   isOpenAddCuisinModal = false;
   selectedCuisin?: ICuisin;
 
-  public cuisinService: CuisinService = inject(CuisinService);
+  public store = inject(AdminCuisineStore);
 
   searchString = signal('');
   scrollSignal = signal(false);
 
-  cuisines = toSignal(this.cuisinService.cuisines$, { initialValue: [] });
-
   isShowDeleteConfirm = signal(false);
-
-  // Computed view model
-  vm = computed(() => ({
-    searchString: this.searchString(),
-    cuisines: this.cuisines(),
-    loading: this.cuisinService.isLoading,
-    hasResults: this.cuisines().length > 0,
-  }));
 
   constructor() {}
 
   ngOnInit(): void {
-    this.cuisinService.reset();
-    this.loadNext();
+    this.store.loadAll();
   }
 
-  private filterEffect = effect(() => {
+  private changeFilter() {
     this.searchString();
-    this.cuisinService.reset();
-    this.loadNext();
-  });
-  // 🔥 Effect a scroll signal-re
-  private scrollEffect = effect(() => {
-    if (this.scrollSignal()) {
-      this.loadNext();
-      this.scrollSignal.set(false); // reset jelzés
-    }
-  });
+    this.store.reset();
+    this.store.loadAll();
+  }
 
   loadMore(inf: InfiniteScroll) {
     this.scrollSignal.set(true);
     inf.done(); // reset loading flag
   }
-
+  /* 
   loadNext() {
     this.cuisinService.loadNext(this.searchString());
   }
-
+ */
   changeSearchString(searchString: string) {
     this.searchString.set(searchString);
   }
@@ -86,7 +66,7 @@ export class Cuisines implements OnInit {
   }
   onConfirmModal(state: boolean) {
     if (this.selectedCuisin && this.selectedCuisin?.id && state) {
-      this.cuisinService.delete(this.selectedCuisin.id);
+      this.store.delete(this.selectedCuisin.id);
     }
     this.isConfirmModalShow = false;
   }

@@ -1,27 +1,21 @@
 import { Component, inject, OnInit } from '@angular/core';
-
-import { AsyncPipe } from '@angular/common';
 import { RecipeCard } from '../../../features/recipes/components/recipe-card/recipe-card';
+import { RecipeStore } from '../../../features/recipes/stores/recipe.store';
 import { RecipeCardFavorite } from '../../../features/recipes/components/recipe-card-favorite/recipe-card-favorite';
-import { FavoriteService } from '../../../features/recipes/services/favorite-service';
 
 @Component({
   selector: 'app-favorites',
-  imports: [AsyncPipe, RecipeCardFavorite, RecipeCard],
+  imports: [RecipeCard, RecipeCardFavorite],
   templateUrl: './favorites.html',
   styleUrl: './favorites.scss',
 })
 export class Favorites implements OnInit {
-  public favoriteService: FavoriteService = inject(FavoriteService);
+  public recipeStore: RecipeStore = inject(RecipeStore);
   constructor() {}
   ngOnInit(): void {
-    this.favoriteService.getAll();
+    this.recipeStore.loadAll();
   }
   setFavorite(favorite: { recipeId: string; state: boolean }) {
-    if (favorite.state) {
-      this.favoriteService.set(favorite.recipeId);
-    } else {
-      this.favoriteService.delete(favorite.recipeId);
-    }
+    this.recipeStore.toggleFavorite(favorite.recipeId);
   }
 }

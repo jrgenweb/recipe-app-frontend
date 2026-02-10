@@ -11,6 +11,7 @@ import { FavoriteService } from '../../services/favorite-service';
 import { AuthService } from '../../../../shared/services/auth-service';
 import { RecipeService } from '../../services/recipe-service';
 import { onImageError } from '../../../../shared/functions';
+import { RecipeStore } from '../../stores/recipe.store';
 
 @Component({
   selector: 'app-recipe-card',
@@ -27,8 +28,9 @@ export class RecipeCard {
   isShowRatingModal = false;
 
   public authService = inject(AuthService);
-  private favoriteService: FavoriteService = inject(FavoriteService);
-  private recipeService: RecipeService = inject(RecipeService);
+
+  //private recipeService: RecipeService = inject(RecipeService);
+  public recipeStore = inject(RecipeStore);
 
   constructor() {}
 
@@ -36,16 +38,12 @@ export class RecipeCard {
     onImageError(event);
   }
   setRate(rate: { recipeId: string; rate: number }) {
-    this.recipeService.updateRating(rate.recipeId, rate.rate);
+    //this.recipeService.updateRating(rate.recipeId, rate.rate);
+    this.recipeStore.updateRating(rate.recipeId, rate.rate);
     this.isShowRatingModal = false;
   }
   setFavorite(favorite: { recipeId: string; state: boolean }) {
-    //const oldFavorites = this.favoriteService.favoriteIds$.value;
-    if (favorite.state) {
-      this.favoriteService.set(favorite.recipeId);
-    } else {
-      this.favoriteService.delete(favorite.recipeId);
-    }
+    this.recipeStore.toggleFavorite(favorite.recipeId);
   }
   openRatingModal() {
     this.isShowRatingModal = true;

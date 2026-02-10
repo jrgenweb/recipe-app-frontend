@@ -11,10 +11,20 @@ import { RecipeFilter } from '../../../../features/recipes/components/recipe-fil
 import { RecipeService } from '../../../../features/recipes/services/recipe-service';
 import { FavoriteService } from '../../../../features/recipes/services/favorite-service';
 import { AuthService } from '../../../../shared/services/auth-service';
+import { AdminRecipeStore } from '../../../../features/admin/features/recipes/stores/admin-recipe.store';
+import { AdminRecipeFilter } from '../../../../features/admin/features/recipes/components/admin-recipe-filter/admin-recipe-filter';
 
 @Component({
   selector: 'app-recipes',
-  imports: [RecipeFilter, RouterLink, RouterLinkActive, RecipeCard, InfiniteScroll, ConfirmModal],
+  imports: [
+    RecipeFilter,
+    RouterLink,
+    RouterLinkActive,
+    RecipeCard,
+    InfiniteScroll,
+    ConfirmModal,
+    AdminRecipeFilter,
+  ],
   templateUrl: './recipes.html',
   styleUrl: './recipes.scss',
 })
@@ -25,88 +35,59 @@ export class Recipes implements OnInit {
   searchString = signal('');
 
   //Services
-  private recipeService = inject(RecipeService);
-  private favoriteService = inject(FavoriteService);
-  private authService = inject(AuthService);
 
-  //recipes = toSignal(this.recipeService.recipes$, { initialValue: { data: [], total: 0 } });
-  favoriteRecipeIds = toSignal(this.favoriteService.favoriteIds$, { initialValue: [] });
+  private favoriteService = inject(FavoriteService);
+
+  public recipeStore = inject(AdminRecipeStore);
+
   ingredientIds = signal<string[]>([]);
 
   // Scroll signal – jelez, ha többet kell betölteni
-  scrollSignal = signal(false);
 
   isShowDeleteConfirm = signal(false);
   selectedRecipe = signal<IRecipeList | null>(null);
 
-  // Computed view model
-  vm = computed(() => ({
-    categoryId: this.categoryId(),
-    cuisinId: this.cuisinId(),
-    searchString: this.searchString(),
-    //recipes: this.recipes(),
-    favoriteRecipes: this.favoriteRecipeIds(),
-    //loading: this.recipeService.loading,
-    //hasResults: this.recipeService.recipes$.value.data?.length > 0,
-  }));
-
   // 🔥 Effect a filter változásokra
-  private filterEffect = effect(() => {
+  private changeFilter() {
     this.categoryId();
     this.cuisinId();
     this.searchString();
     this.ingredientIds();
-
-    // minden változáskor reset + loadNext
-    //this.recipeService.reset();
-    this.loadNext();
-  });
+    this.recipeStore.reset();
+    this.recipeStore.loadAll();
+  }
   // 🔥 Effect a scroll signal-re
-  private scrollEffect = effect(() => {
-    if (this.scrollSignal()) {
-      this.loadNext();
-      this.scrollSignal.set(false); // reset jelzés
-    }
-  });
+
   constructor() {}
 
   ngOnInit(): void {
     // Alapadatok
+    this.changeFilter();
     this.favoriteService.getAll();
-  }
-
-  // LoadNext mindig signalsból hívható
-  loadNext() {
-    /* this.recipeService.loadNext(
-      this.searchString(),
-      this.categoryId(),
-      this.cuisinId(),
-      this.ingredientIds(),
-    ); */
   }
 
   // Setterek – ez triggereli az effect-et
   changeCategory(categoryId: string) {
     this.categoryId.set(categoryId);
+    this.changeFilter();
   }
 
   changeCuisin(cuisinId: string) {
     this.cuisinId.set(cuisinId);
+    this.changeFilter();
   }
 
   changeSearchString(searchString: string) {
     this.searchString.set(searchString);
+    this.changeFilter();
   }
 
   onChangeIngredient(ingredients: IRecipeIngredient[]) {
     const ingredientIds = ingredients.map((i) => i.id);
     this.ingredientIds.set(ingredientIds);
+    this.changeFilter();
   }
-  onScroll(scroll: boolean) {
-    if (scroll) {
-      this.scrollSignal.set(true);
-    }
-  }
+
   showDeleteConfirm(recipe: IRecipeList) {
     this.selectedRecipe.set(recipe);
     if (this.selectedRecipe()) {

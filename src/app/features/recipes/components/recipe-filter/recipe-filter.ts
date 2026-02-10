@@ -2,8 +2,9 @@ import { Component, EventEmitter, inject, OnInit, Output } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { ISelect, Select, TSelect } from '../select/select';
-import { CategoryService } from '../../../admin/features/categories/services/category-service';
-import { CuisinService } from '../../../admin/features/cuisines/services/cuisine-service';
+
+import { CategoryStore } from '../../../categories/store/category.store';
+import { CuisineStore } from '../../../cuisines/stores/cuisine.store';
 
 @Component({
   selector: 'app-recipe-filter',
@@ -23,31 +24,27 @@ export class RecipeFilter implements OnInit {
   selectedCategory!: ISelect;
   selectedCuisin!: ISelect;
 
-  public categoryService: CategoryService = inject(CategoryService);
-  public cuisinService: CuisinService = inject(CuisinService);
+  public categoryStore: CategoryStore = inject(CategoryStore);
+  public cuisineStore: CuisineStore = inject(CuisineStore);
 
   constructor() {}
 
   ngOnInit(): void {
-    this.categoryService.getAll();
-    this.cuisinService.getAll();
+    this.categoryStore.loadAll();
+    this.cuisineStore.loadAll();
 
-    this.categoryService.categories$.subscribe((resp) => {
-      this.categorySelectItems = resp.map((c) => {
-        return {
-          value: c.id,
-          label: c.name,
-        };
-      });
+    this.categorySelectItems = this.categoryStore.categories().map((c) => {
+      return {
+        value: c.id,
+        label: c.name,
+      };
     });
 
-    this.cuisinService.cuisines$.subscribe((resp) => {
-      this.cuisinSelectItems = resp.map((c) => {
-        return {
-          value: c.id!,
-          label: c.name,
-        };
-      });
+    this.cuisinSelectItems = this.cuisineStore.cuisines().map((c) => {
+      return {
+        value: c.id!,
+        label: c.name,
+      };
     });
   }
 

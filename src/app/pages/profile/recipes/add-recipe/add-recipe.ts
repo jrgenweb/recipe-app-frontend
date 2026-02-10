@@ -16,9 +16,12 @@ import { IRecipeDetail, IRecipeIngredient } from '@recipe/shared';
 
 import { asyncImageValidator } from '../../../../shared/validators/async-image-validator';
 import { IngredientService } from '../../../../features/admin/features/ingredients/services/ingredient-service';
-import { CategoryService } from '../../../../features/admin/features/categories/services/category-service';
+
 import { RecipeService } from '../../../../features/recipes/services/recipe-service';
-import { CuisinService } from '../../../../features/admin/features/cuisines/services/cuisine-service';
+
+import { RecipeStore } from '../../../../features/recipes/stores/recipe.store';
+import { CategoryStore } from '../../../../features/categories/store/category.store';
+import { CuisineStore } from '../../../../features/cuisines/stores/cuisine.store';
 
 @Component({
   selector: 'app-add',
@@ -34,15 +37,18 @@ export class AddRecipe implements OnInit {
   isEditMode = false;
 
   public ingredientService: IngredientService = inject(IngredientService);
-  public categoryService: CategoryService = inject(CategoryService);
+  public categoryStore: CategoryStore = inject(CategoryStore);
+  public recipeStore: RecipeStore = inject(RecipeStore);
+
   public recipeService: RecipeService = inject(RecipeService);
-  public cuisinService: CuisinService = inject(CuisinService);
+
+  public cuisinStore = inject(CuisineStore);
   private route: ActivatedRoute = inject(ActivatedRoute);
 
   constructor() {
     this.ingredientService.loadNext();
-    this.categoryService.getAll();
-    this.cuisinService.getAll();
+    this.categoryStore.loadAll();
+    this.cuisinStore.loadAll();
   }
   ngOnInit(): void {
     this.buildForm();
@@ -191,7 +197,7 @@ export class AddRecipe implements OnInit {
     }));
 
     const request$ = this.isEditMode
-      ? this.recipeService.update(this.recipe!.id, recipe)
+      ? this.recipeStore.update(this.recipe!.id, recipe)
       : this.recipeService.create(recipe);
 
     request$;

@@ -8,10 +8,13 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AsyncPipe } from '@angular/common';
 import { InfiniteScroll } from '../../../../../components/infinite-scroll/infinite-scroll';
 import { IngredientService } from '../../../../../features/admin/features/ingredients/services/ingredient-service';
-import { CategoryService } from '../../../../../features/admin/features/categories/services/category-service';
+
 import { RecipeService } from '../../../../../features/recipes/services/recipe-service';
-import { CuisinService } from '../../../../../features/admin/features/cuisines/services/cuisine-service';
+
 import { asyncImageValidator } from '../../../../../shared/validators/async-image-validator';
+import { AdminCategoryStore } from '../../../../../features/admin/features/categories/stores/admin-category.store';
+
+import { AdminCuisineStore } from '../../../../../features/admin/features/cuisines/stores/admin-cuisine.store';
 
 @Component({
   selector: 'app-add-recipe',
@@ -27,14 +30,15 @@ export class AddRecipe implements OnInit {
   isEditMode = false;
 
   public ingredientService: IngredientService = inject(IngredientService);
-  public categoryService: CategoryService = inject(CategoryService);
+
+  public categoryStore = inject(AdminCategoryStore);
   public recipeService: RecipeService = inject(RecipeService);
-  public cuisinService: CuisinService = inject(CuisinService);
+  public cuisinStore = inject(AdminCuisineStore);
   private route: ActivatedRoute = inject(ActivatedRoute);
 
   constructor() {
-    this.categoryService.getAll();
-    this.cuisinService.getAll();
+    this.categoryStore.loadAll();
+    this.cuisinStore.loadAll();
     this.ingredientService.loadNext();
   }
 

@@ -26,7 +26,7 @@
           (changeFavoriteEvt)="setFavorite($event)"
           [recipeId]="recipe.id"
           [isFavorite]="isFavorite"
-          [disabled]="!(authService.isLoggedin$ | async)"
+          [disabled]="false"
         ></app-btn-favorite>
       }
       <!-- View Button -->

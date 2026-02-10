@@ -1,9 +1,9 @@
-@if (vm().hasRecipe) {
+@if (recipeStore.selectedRecipe()) {
   <!-- Header: Recept név + Vissza link -->
   <div
     class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center my-4"
   >
-    <h2 class="mb-2 mb-md-0">{{ vm().recipe?.name }}</h2>
+    <h2 class="mb-2 mb-md-0">{{ recipeStore.selectedRecipe()?.name }}</h2>
     <a routerLink="/recipes" class="btn btn-outline-secondary btn-sm">Vissza</a>
   </div>
 
@@ -13,27 +13,29 @@
       <div
         class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-2"
       >
-        <div class="fw-bold">Feltöltötte: {{ vm().recipe?.user?.name }}</div>
+        <div class="fw-bold">Feltöltötte: {{ recipeStore.selectedRecipe()?.user?.name }}</div>
         <div class="text-muted small">
-          {{ vm().recipe?.createdAt | date: 'yyyy.MM.dd' }}
+          {{ recipeStore.selectedRecipe()?.createdAt | date: 'yyyy.MM.dd' }}
         </div>
       </div>
 
       <div
         class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 gap-2"
       >
-        <div class="text-muted small">Hozzászólások: {{ vm().comments.length }}</div>
+        <div class="text-muted small">Hozzászólások: {{ commentStore.comments().length }}</div>
         <app-rating
           [disabled]="false"
-          [avgRate]="vm().recipe!.avgRating"
+          [avgRate]="recipeStore.selectedRecipe()!.avgRating"
           (changeRateEvt)="onChangeRate($event)"
-          [recipeId]="vm().recipe!.id"
+          [recipeId]="recipeStore.selectedRecipe()!.id"
         ></app-rating>
       </div>
 
       <div class="d-flex flex-wrap gap-2 mt-2">
-        <span class="badge rounded-pill text-bg-primary">{{ vm().recipe?.cuisine?.name }}</span>
-        @for (c of vm().recipe!.recipeCategories; track c.category.id) {
+        <span class="badge rounded-pill text-bg-primary">{{
+          recipeStore.selectedRecipe()?.cuisine?.name
+        }}</span>
+        @for (c of recipeStore.selectedRecipe()?.recipeCategories; track c.category.id) {
           <span class="badge rounded-pill text-bg-light text-dark">{{ c.category.name }}</span>
         }
       </div>
@@ -43,8 +45,8 @@
   <!-- Galéria -->
   <div class="mb-4">
     <app-recipe-gallery
-      [items]="vm().recipe!.recipeImages"
-      [title]="vm().recipe!.name"
+      [items]="recipeStore.selectedRecipe()!.recipeImages"
+      [title]="recipeStore.selectedRecipe()!.name"
       class=""
     ></app-recipe-gallery>
   </div>
@@ -52,7 +54,7 @@
   <!-- Leírás -->
   <div class="card mb-4">
     <div class="card-body">
-      <p class="mb-0">{{ vm().recipe?.description }}</p>
+      <p class="mb-0">{{ recipeStore.selectedRecipe()?.description }}</p>
     </div>
   </div>
 
@@ -65,7 +67,7 @@
           <h3 class="mb-3">Hozzávalók</h3>
           <table class="table table-striped mb-0">
             <tbody>
-              @for (ingredient of vm().recipe?.recipeIngredients; track $index) {
+              @for (ingredient of recipeStore.selectedRecipe()?.recipeIngredients; track $index) {
                 <tr>
                   <td>{{ ingredient.ingredient.name }}</td>
                   <td>{{ ingredient.quantity }} {{ ingredient.ingredient.unit }}</td>
@@ -84,7 +86,7 @@
         <div class="card-body">
           <h3 class="mb-3">Elkészítés</h3>
           <div class="d-flex flex-column gap-3">
-            @for (step of vm().recipe?.recipeSteps; track $index) {
+            @for (step of recipeStore.selectedRecipe()?.recipeSteps; track $index) {
               <div class="p-3 rounded-2 shadow-sm bg-light">
                 <h4 class="mb-1">{{ $index + 1 }}. {{ step.name }}</h4>
                 <p class="mb-0">{{ step.description }}</p>
@@ -99,19 +101,20 @@
   </div>
 
   <!-- Kommentek -->
+
   <div class="mb-4">
-    <h3 class="mb-3">Hozzászólások ({{ vm().comments.length }})</h3>
+    <h3 class="mb-3">Hozzászólások ({{ commentStore.comments().length }})</h3>
 
     <app-add-comment
-      [recipeId]="vm().recipe!.id"
+      [recipeId]="recipeStore.selectedRecipe()!.id"
       (onCommentEvt)="onComment($event)"
       class="mb-3"
     ></app-add-comment>
 
-    @if (vm().comments.length === 0) {
+    @if (commentStore.comments().length === 0) {
       <p class="text-center text-muted">Nincsenek kommentek</p>
     } @else {
-      @for (comment of vm().comments; track $index) {
+      @for (comment of commentStore.comments(); track $index) {
         <div class="card my-2">
           <div class="card-body d-flex gap-3">
             <div class="d-flex align-items-center gap-2" style="min-width: 150px">

@@ -16,9 +16,9 @@
     <label for="searchInput">Keresés</label>
   </div>
 </div>
-@if (vm().loading) {
+@if (store.isLoading()) {
   <app-spinner></app-spinner>
-} @else if (!vm().loading && !vm().hasResults) {
+} @else if (!store.isLoading() && store.categories().length === 0) {
   <p class="text-center my-3 p-2">Nincs találat</p>
 } @else {
   <div class="table-responsive">
@@ -30,7 +30,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (category of vm().categories; track $index) {
+        @for (category of store.categories(); track category.id) {
           <tr>
             <td>
               {{ category.name }}
@@ -55,8 +55,8 @@
     </table>
   </div>
 }
-
-<app-infinite-scroll #inf (loadMore)="loadMore(inf)"></app-infinite-scroll>
+<!-- 
+<app-infinite-scroll #inf (loadMore)="loadMore(inf)"></app-infinite-scroll> -->
 <app-add-category-modal
   [isOpen]="isOpenAddCategoryModal"
   [category]="selectedCategory"

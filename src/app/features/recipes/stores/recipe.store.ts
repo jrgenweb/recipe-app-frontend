@@ -1,6 +1,11 @@
 import { inject, Injectable, signal, computed } from '@angular/core';
-import { RecipeService } from '../services/recipe-service'; // Az eredeti HTTP hívásokat ide mozgatjuk át
-import { IRecipeListResponse, IRecipeFavoriteResponse, ICreateRecipe } from '@recipe/shared';
+import { RecipeService } from '../services/recipe-service';
+import {
+  IRecipeListResponse,
+  IRecipeFavoriteResponse,
+  ICreateRecipe,
+  IRecipeDetail,
+} from '@recipe/shared';
 import { finalize, tap } from 'rxjs';
 import { FavoriteService } from '../services/favorite-service';
 import { ToastService } from '../../../shared/services/toast-service';
@@ -14,12 +19,11 @@ export class RecipeStore {
 
   // --- State ---
   private _recipes = signal<IRecipeListResponse>({ data: [], total: 0 });
+
   private _favoriteRecipes = signal<IRecipeFavoriteResponse>({ data: [], total: 0 });
   private _favoriteRecipeIds = signal<string[]>([]);
-  private _ownRecipes = signal<IRecipeListResponse>({ data: [], total: 0 });
-
-  // --- Selectors ---
-
+  private _myRecipes = signal<IRecipeListResponse>({ data: [], total: 0 });
+  private _selectedRecipe = signal<IRecipeDetail | null>(null);
   private _loading = signal<boolean>(false);
   private _error = signal<string | null>(null);
 
@@ -29,7 +33,8 @@ export class RecipeStore {
   readonly isLoading = computed(() => this._loading());
   readonly favoriteRecipes = computed(() => this._favoriteRecipes().data);
   readonly favoriteRecipeIds = computed(() => this._favoriteRecipeIds());
-  readonly ownRecipes = computed(() => this._recipes().data);
+  readonly selectedRecipe = computed(() => this._selectedRecipe());
+  readonly myRecipes = computed(() => this._myRecipes().data);
 
   isFavorite = (recipeId: string) => computed(() => this._favoriteRecipeIds().includes(recipeId));
 
@@ -38,11 +43,12 @@ export class RecipeStore {
   /** Kezdeti betöltés vagy keresés */
   loadAll(search?: string, categoryId?: string, cuisinId?: string, ingredientIds?: string[]) {
     this._loading.set(true);
-    this.recipeService.getAllRecipes(search, categoryId).subscribe({
+    this.recipeService.getRecipes(search, categoryId, cuisinId, ingredientIds).subscribe({
       next: (resp) => this._recipes.set(resp),
       error: (err) => this._error.set(err.message),
       complete: () => this._loading.set(false),
     });
+    this.loadFavorites();
   }
 
   /** Végtelen görgetéshez (Infinite Scroll) */
@@ -65,13 +71,26 @@ export class RecipeStore {
     this._loading.set(true);
     this.recipeService.getOwnRecipes().subscribe({
       next: (resp) => {
-        this._ownRecipes.set(resp);
+        this._myRecipes.set(resp);
       },
       error: (err) => this._error.set(err.message),
       complete: () => this._loading.set(false),
     });
   }
-  // --- Actions ---
+
+  loadDetail(id: string) {
+    this._loading.set(true);
+    this._selectedRecipe.set(null);
+    this.recipeService
+      .getRecipeDetail(id)
+      .pipe(finalize(() => this._loading.set(false)))
+      .subscribe({
+        next: (res) => {
+          this._selectedRecipe.set(res);
+        },
+        error: (err: { message: string }) => this._error.set(err.message),
+      });
+  }
 
   /** Kedvencek betöltése (például alkalmazás indításakor vagy login után) */
   loadFavorites() {
@@ -87,20 +106,67 @@ export class RecipeStore {
 
   /** Kedvenc állapot váltása (Add/Remove) */
   toggleFavorite(recipeId: string) {
-    // Optimista frissítés: azonnal módosítjuk a UI-t
-    const isCurrentlyFav = this._favoriteRecipeIds().includes(recipeId);
+    const isFav = this._favoriteRecipeIds().includes(recipeId);
 
-    if (isCurrentlyFav) {
+    // Optimista UI update
+    if (isFav) {
+      // Eltávolítás
       this._favoriteRecipeIds.update((ids) => ids.filter((id) => id !== recipeId));
-      // Backend hívás
-      this.favoriteService.set(recipeId).subscribe({
-        next: (resp) => {},
-        error: (err) => {},
+      this._favoriteRecipes.update((state) => ({
+        data: state.data.filter((f) => f.recipeId !== recipeId),
+        total: state.total - 1,
+      }));
+
+      this.favoriteService.delete(recipeId).subscribe({
+        error: () => {
+          // rollback
+          this._favoriteRecipeIds.update((ids) => [...ids, recipeId]);
+          this._favoriteRecipes.update((state) => ({
+            data: [...state.data.filter((f) => f.recipeId !== recipeId)], // minimal rollback
+            total: state.total + 1,
+          }));
+        },
       });
     } else {
+      // Hozzáadás
       this._favoriteRecipeIds.update((ids) => [...ids, recipeId]);
-      // Backend hívás
-      this.favoriteService.delete(recipeId).subscribe(() => {});
+
+      const setFavoritedRecipe = this.recipes().find((r) => r.id === recipeId);
+
+      /*
+       recipeId: string;
+          userId: string;
+          createdAt: string;
+          updatedAt: string;
+          recipe: IRecipeList;*/
+
+      if (setFavoritedRecipe) {
+        this._favoriteRecipeIds.update((ids) => [...ids, recipeId]);
+        this._favoriteRecipes.update((state) => ({
+          data: [
+            ...state.data,
+            {
+              createdAt: setFavoritedRecipe?.creatadAt,
+              recipeId: setFavoritedRecipe?.id,
+              recipe: setFavoritedRecipe,
+              updatedAt: setFavoritedRecipe?.updatedAt,
+              userId: setFavoritedRecipe?.userId,
+            },
+          ],
+          total: state.total + 1,
+        }));
+      }
+
+      this.favoriteService.set(recipeId).subscribe({
+        error: () => {
+          // rollback
+          this._favoriteRecipeIds.update((ids) => ids.filter((id) => id !== recipeId));
+          this._favoriteRecipes.update((state) => ({
+            data: state.data.filter((f) => f.recipeId !== recipeId),
+            total: state.total - 1,
+          }));
+        },
+      });
     }
   }
 
@@ -113,6 +179,16 @@ export class RecipeStore {
           ...state,
           data: state.data.map((r) => (r.id === id ? { ...r, avgRating, ratingCount } : r)),
         }));
+
+        // Frissítjük a részletes nézetet (ha épp ezt a receptet nézzük)
+        const currentSelected = this._selectedRecipe();
+        if (currentSelected && currentSelected.id === id) {
+          this._selectedRecipe.set({
+            ...currentSelected,
+            avgRating,
+            ratingCount,
+          });
+        }
       },
       error: () => {},
     });

@@ -11,7 +11,7 @@ import {
   IRecipeCommentResponse,
   IRecipeList,
 } from '@recipe/shared';
-import { ToastService } from '../../../shared/services/toast-service';
+
 import { API_URL } from '../../../config/config';
 import { IUpdateRecipe } from '../../../shared/interfaces/update-recipe.interface';
 
@@ -25,20 +25,16 @@ export class RecipeService {
 
   constructor() {}
 
-  getAllRecipes(search?: string, categoryId?: string) {
+  getRecipes(search?: string, categoryId?: string, cuisineId?: string, ingredientIds?: string[]) {
     let params = new HttpParams();
-    if (categoryId) params = params.set('categoryId', String(categoryId));
+    if (categoryId && categoryId != 'all') params = params.set('categoryId', String(categoryId));
     if (search) params = params.set('search', String(search));
-
-    return this.http.get<IRecipeListResponse>(API_URL + '/recipes', { params });
+    if (cuisineId && cuisineId !== 'all') params = params.set('cuisinId', String(cuisineId));
+    if (ingredientIds && ingredientIds.length > 0) {
+      params = params.set('ingredientIds', ingredientIds.join(','));
+    }
+    return this.http.get<IRecipeListResponse>(API_URL + '/recipes', { params }).pipe(delay(500));
   }
-
-  /*  search,
-        categoryId,
-        cuisinId,
-        ingredientIds,
-        skip,
-        take: 20, */
 
   fetchRecipes(
     search?: string,
@@ -62,7 +58,7 @@ export class RecipeService {
 
     return this.http
       .get<IRecipeListResponse>(API_URL + (own ? '/recipes/my' : '/recipes'), { params })
-      .pipe(); //delay(500)
+      .pipe(delay(500)); //delay(500)
   }
 
   getOwnRecipes(search?: string, categoryId?: string, skip?: number, take?: number) {
@@ -89,6 +85,9 @@ export class RecipeService {
     return this.http.patch(API_URL + '/recipes/' + recipeId, { ...recipe });
   }
 
+  getRecipeDetail(recipeId: string) {
+    return this.http.get<IRecipeDetail>(API_URL + '/recipes/' + recipeId);
+  }
   getRecipeWithComments(id: string) {
     return forkJoin({
       recipe: this.http.get<IRecipeDetail>(API_URL + '/recipes/' + id),
@@ -99,11 +98,6 @@ export class RecipeService {
       map((res) => ({ recipe: res.recipe, comments: res.comments.data })),
       tap(() => {}),
     );
-  }
-
-  /* Comments */
-  createComment(recipeId: string, text: string) {
-    return this.http.post(API_URL + '/recipes/' + recipeId + '/comments', { text });
   }
 
   /**

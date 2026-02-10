@@ -15,6 +15,8 @@ import { IRecipeCommentResponse } from '@recipe/shared';
 import { RecipeGallery } from '../../../features/recipes/components/recipe-gallery/recipe-gallery';
 import { AddComment } from '../../../features/recipes/components/add-comment/add-comment';
 import { RecipeService } from '../../../features/recipes/services/recipe-service';
+import { RecipeStore } from '../../../features/recipes/stores/recipe.store';
+import { CommentStore } from '../../../features/comments/store/comment.store';
 
 @Component({
   selector: 'app-view-recipe',
@@ -27,20 +29,24 @@ export class ViewRecipe implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
+  public recipeStore = inject(RecipeStore);
+  public commentStore = inject(CommentStore);
+
   // Signal a route param-ra
   private recipeId = toSignal(this.route.paramMap.pipe(map((params) => params.get('id') || '')));
 
   // Signal a receptre a service-ből
   // létrehozol egy üres signal-t
-  recipe = signal<IRecipeDetail | undefined>(undefined);
+  //  recipe = signal<IRecipeDetail | undefined>(undefined);
   comments = signal<IRecipeCommentResponse[]>([]);
 
-  avgRating = signal(this.recipe()?.avgRating || 0); // kezdeti érték a recept értékelése, vagy 0, ha nincs
+  //avgRating = signal(this.recipe()?.avgRating || 0); // kezdeti érték a recept értékelése, vagy 0, ha nincs
 
   ngOnInit() {
-    this.loadRecipe();
+    this.recipeStore.loadDetail(this.recipeId() || ''); // IDEIGLENESEN
+    this.commentStore.loadAll(this.recipeId() || ''); // IDEIGLENESEN
   }
-
+  /*
   loadRecipe() {
     this.recipeService
       .getRecipeWithComments(this.recipeId() || '')
@@ -57,11 +63,12 @@ export class ViewRecipe implements OnInit {
         this.avgRating.set(res.recipe.avgRating);
       });
   }
-
+*/
   //Rating visszatöltése a backendről, pl. új értékelés után
   loadRating() {}
 
   // Computed view model
+  /*
   vm = computed(() => {
     const recipe = this.recipe();
 
@@ -70,21 +77,22 @@ export class ViewRecipe implements OnInit {
       hasRecipe: !!recipe,
       comments: this.comments() ?? [],
     };
-  });
+  });*/
 
   constructor() {}
 
   // Új komment esetén frissítés
   onComment(_state: boolean) {
     // újra lekéri a receptet
-    this.loadRecipe();
+    //this.loadRecipe();
     //this.loadComments(); majd később
   }
 
   onChangeRate(rate: { recipeId: string; rate: number }) {
-    this.recipeService.updateRating(rate.recipeId, rate.rate);
-    this.avgRating.set(rate.rate); // frissíti a jelzett értékelést
+    this.recipeStore.updateRating(rate.recipeId, rate.rate);
+    //this.recipeService.updateRating(rate.recipeId, rate.rate);
+    //this.avgRating.set(rate.rate); // frissíti a jelzett értékelést
 
-    this.loadRecipe();
+    //this.loadRecipe();
   }
 }

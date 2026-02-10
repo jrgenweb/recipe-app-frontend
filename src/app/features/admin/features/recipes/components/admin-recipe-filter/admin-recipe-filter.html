@@ -1,0 +1,45 @@
+<p>admin-recipe-filter works!</p>
+<div class="filter rounded-2 bg-light p-2 shadow-sm">
+  <div class="form-floating">
+    <input
+      type="text"
+      class="form-control"
+      name="name"
+      id="name"
+      placeholder=""
+      [(ngModel)]="searchString"
+    />
+    <label for="name">Keresés</label>
+  </div>
+
+  <div class="mb-3">
+    <label for="cuisineId" class="form-label">Konyha</label>
+    <select
+      class="form-select form-select-lg"
+      name="cuisineId"
+      id="cuisineId"
+      [(ngModel)]="selectedCuisineId"
+      (change)="onCuisinChange()"
+    >
+      <option selected value="all">Összes</option>
+      @for (cuisine of cuisineStore.cuisines(); track $index) {
+        <option [value]="cuisine.id">{{ cuisine.name }}</option>
+      }
+    </select>
+  </div>
+  <div class="mb-3">
+    <label for="categoryId" class="form-label">Kategória</label>
+    <select
+      class="form-select form-select-lg"
+      name="categoryId"
+      id="categoryId"
+      [(ngModel)]="selectedCategoryId"
+      (change)="onCategoryChange()"
+    >
+      <option selected value="all">Összes</option>
+      @for (category of categoryStore.categories(); track $index) {
+        <option [value]="category.id">{{ category.name }}</option>
+      }
+    </select>
+  </div>
+</div>

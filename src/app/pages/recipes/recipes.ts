@@ -22,7 +22,7 @@ import { RecipeStore } from '../../features/recipes/stores/recipe.store';
 export class Recipes implements OnInit {
   // Signals a filter state-re
   categoryId = signal('');
-  cuisinId = signal('');
+  cuisineId = signal('');
   searchString = signal('');
 
   public recipeStore = inject(RecipeStore);
@@ -70,7 +70,7 @@ export class Recipes implements OnInit {
     this.recipeStore.loadAll(
       this.searchString(),
       this.categoryId(),
-      this.cuisinId(),
+      this.cuisineId(),
       this.ingredientIds(),
     );
   }
@@ -81,7 +81,8 @@ export class Recipes implements OnInit {
   }
 
   changeCuisin(cuisinId: string) {
-    this.cuisinId.set(cuisinId);
+    this.cuisineId.set(cuisinId);
+    this.updateFilters();
   }
 
   changeSearchString(searchString: string) {

@@ -12,7 +12,10 @@
 <div class="row mt-5">
   @for (recipe of recipeStore.recipes(); track $index) {
     <div class="col-6 col-md-6 col-lg-4 mb-3">
-      <app-recipe-card [recipe]="recipe" [isFavorite]="false"></app-recipe-card>
+      <app-recipe-card
+        [recipe]="recipe"
+        [isFavorite]="recipeStore.isFavorite(recipe.id)()"
+      ></app-recipe-card>
     </div>
   }
 </div>

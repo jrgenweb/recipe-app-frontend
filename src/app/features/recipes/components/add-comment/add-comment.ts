@@ -1,9 +1,10 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Input, OnInit, Output } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { AsyncPipe } from '@angular/common';
 import { RecipeService } from '../../services/recipe-service';
 import { AuthService } from '../../../../shared/services/auth-service';
+import { CommentStore } from '../../../comments/store/comment.store';
 
 @Component({
   selector: 'app-add-comment',
@@ -15,10 +16,10 @@ export class AddComment implements OnInit {
   commentForm!: FormGroup;
   @Input() recipeId!: string;
   @Output() onCommentEvt = new EventEmitter<boolean>();
-  constructor(
-    private recipeService: RecipeService,
-    public authService: AuthService,
-  ) {}
+
+  private commentStore = inject(CommentStore);
+  public authService: AuthService = inject(AuthService);
+  constructor() {}
   ngOnInit(): void {
     this.commentForm = new FormGroup({
       text: new FormControl('', Validators.required),
@@ -29,11 +30,8 @@ export class AddComment implements OnInit {
     this.commentForm.markAllAsTouched();
     if (this.commentForm.valid) {
       //küldés
-      this.recipeService
-        .createComment(this.recipeId, this.commentForm.value.text)
-        .subscribe((resp) => {
-          this.onCommentEvt.emit(true);
-        });
+      const msg = this.commentForm.value.text;
+      this.commentStore.create(this.recipeId, msg);
     }
   }
 }

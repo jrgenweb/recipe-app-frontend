@@ -16,9 +16,9 @@
     <label for="searchInput">Keresés</label>
   </div>
 </div>
-@if (vm().loading) {
+@if (store.isLoading()) {
   <app-spinner></app-spinner>
-} @else if (!vm().loading && !vm().hasResults) {
+} @else if (!store.isLoading() && store.cuisines().length === 0) {
   <p class="text-center my-3 p-2">Nincs találat</p>
 } @else {
   <div class="table-responsive">
@@ -30,21 +30,21 @@
         </tr>
       </thead>
       <tbody>
-        @for (category of vm().cuisines; track $index) {
+        @for (cuisine of store.cuisines(); track $index) {
           <tr>
             <td>
-              {{ category.name }}
+              {{ cuisine.name }}
             </td>
             <td class="text-center">
               <button
                 class="btn-sm btn rounded-circle btn-danger me-2"
-                (click)="showDeleteConfirm(category)"
+                (click)="showDeleteConfirm(cuisine)"
               >
                 <i class="bi bi-trash"></i>
               </button>
               <button
                 class="btn-sm btn rounded-circle btn-success"
-                (click)="openAddCuisinModal(category)"
+                (click)="openAddCuisinModal(cuisine)"
               >
                 <i class="bi bi-pencil"></i>
               </button>

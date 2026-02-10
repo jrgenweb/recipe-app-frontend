@@ -9,7 +9,9 @@ import {
 } from '@angular/core';
 
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CuisinService, ICuisin } from '../../services/cuisine-service';
+import { ICuisin } from '../../services/admin-cuisine-service';
+import { CuisineStore } from '../../../../../cuisines/stores/cuisine.store';
+import { AdminCuisineStore } from '../../stores/admin-cuisine.store';
 
 @Component({
   selector: 'app-add-cuisin-modal',
@@ -23,7 +25,7 @@ export class AddCuisinModal implements OnChanges {
   @Input() isOpen = false;
   @Output() confirmEvt = new EventEmitter<boolean>();
 
-  private cuisinService: CuisinService = inject(CuisinService);
+  public cusineStore = inject(AdminCuisineStore);
 
   constructor() {}
   ngOnChanges(changes: SimpleChanges): void {
@@ -47,11 +49,10 @@ export class AddCuisinModal implements OnChanges {
       this.isOpen = false;
       if (this.cuisin) {
         this.cuisin.name = cuisinName;
-        this.cuisinService.update(this.cuisin);
+        this.cusineStore.update(this.cuisin);
       } else {
         //add
-
-        this.cuisinService.create(cuisinName);
+        this.cusineStore.create(cuisinName);
       }
     }
     this.cuisin = undefined;

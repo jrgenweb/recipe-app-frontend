@@ -1,12 +1,17 @@
-import { Component, inject, Input } from '@angular/core';
-
+import { Component, ElementRef, HostListener, inject, Input, ViewChild } from '@angular/core';
 import { IRecipeList } from '@recipe/shared';
 
 import { RouterLink } from '@angular/router';
+import { AsyncPipe } from '@angular/common';
+import { Rating } from '../../../../components/rating/rating';
 import { BtnFavorite } from '../../../../components/btn-favorite/btn-favorite';
 import { ShortenPipe } from '../../../../shared/pipes/shorten-pipe';
+import { RatingModal } from '../../../../components/rating-modal/rating-modal';
 import { FavoriteService } from '../../services/favorite-service';
+import { AuthService } from '../../../../shared/services/auth-service';
+import { RecipeService } from '../../services/recipe-service';
 import { onImageError } from '../../../../shared/functions';
+import { RecipeStore } from '../../stores/recipe.store';
 
 @Component({
   selector: 'app-recipe-card-favorite',
@@ -17,8 +22,15 @@ import { onImageError } from '../../../../shared/functions';
 export class RecipeCardFavorite {
   @Input() recipe!: IRecipeList;
   @Input() isFavorite = false;
+  @ViewChild('ratingModal') ratingModal!: ElementRef<RatingModal>;
 
-  private favoriteService: FavoriteService = inject(FavoriteService);
+  isSmallScreen = window.innerWidth < 576;
+  isShowRatingModal = false;
+
+  public authService = inject(AuthService);
+
+  //private recipeService: RecipeService = inject(RecipeService);
+  public recipeStore = inject(RecipeStore);
 
   constructor() {}
 
@@ -27,11 +39,6 @@ export class RecipeCardFavorite {
   }
 
   setFavorite(favorite: { recipeId: string; state: boolean }) {
-    //const oldFavorites = this.favoriteService.favoriteIds$.value;
-    if (favorite.state) {
-      this.favoriteService.set(favorite.recipeId);
-    } else {
-      this.favoriteService.delete(favorite.recipeId);
-    }
+    this.recipeStore.toggleFavorite(favorite.recipeId);
   }
 }

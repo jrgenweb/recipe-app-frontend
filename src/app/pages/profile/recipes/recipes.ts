@@ -3,7 +3,6 @@ import { RouterLink } from '@angular/router';
 
 import { Observable } from 'rxjs';
 import { IRecipeList, IRecipeListResponse } from '@recipe/shared';
-import { AsyncPipe } from '@angular/common';
 
 import { AuthService } from '../../../shared/services/auth-service';
 
@@ -12,26 +11,22 @@ import { ConfirmModal } from '../../../components/confirm-modal/confirm-modal';
 import { InfiniteScroll } from '../../../components/infinite-scroll/infinite-scroll';
 import { RecipeFilter } from '../../../features/recipes/components/recipe-filter/recipe-filter';
 import { RecipeCard } from '../../../features/recipes/components/recipe-card/recipe-card';
-import { RecipeService } from '../../../features/recipes/services/recipe-service';
-import { FavoriteService } from '../../../features/recipes/services/favorite-service';
+
+import { RecipeStore } from '../../../features/recipes/stores/recipe.store';
+import { MyRecipeCard } from '../../../features/recipes/components/my-recipe-card/my-recipe-card';
 
 @Component({
   selector: 'app-recipes',
-  imports: [RouterLink, AsyncPipe, RecipeFilter, ConfirmModal, RecipeCard, InfiniteScroll],
+  imports: [RouterLink, RecipeFilter, ConfirmModal, RecipeCard, InfiniteScroll, MyRecipeCard],
   templateUrl: './recipes.html',
   styleUrl: './recipes.scss',
 })
 export class Recipes implements OnInit {
-  ownRecipes$!: Observable<IRecipeListResponse>;
-  favoriteRecipeIds: string[] = [];
   searchString = '';
   categoryId = '';
 
-  //services
-
-  public recipeService = inject(RecipeService);
-  public favoriteService = inject(FavoriteService);
   public authService = inject(AuthService);
+  public recipeStore = inject(RecipeStore);
   //pagination
   currentPage = 1;
   take = 1;
@@ -43,8 +38,8 @@ export class Recipes implements OnInit {
   constructor() {}
   ngOnInit(): void {
     //this.recipeService.reset();
-    this.loadNext();
-    this.favoriteService.getAll();
+    this.recipeStore.getOwnRecipes();
+    this.recipeStore.loadFavorites();
   }
 
   onImageError(event: Event) {
@@ -52,14 +47,10 @@ export class Recipes implements OnInit {
     img.src = 'https://placehold.co/600x400';
   }
   setRate(rate: { recipeId: string; rate: number }) {
-    this.recipeService.updateRating(rate.recipeId, rate.rate);
+    this.recipeStore.updateRating(rate.recipeId, rate.rate);
   }
   setFavorite(favorite: { recipeId: string; state: boolean }) {
-    if (favorite.state) {
-      this.favoriteService.set(favorite.recipeId);
-    } else {
-      this.favoriteService.delete(favorite.recipeId);
-    }
+    this.recipeStore.toggleFavorite(favorite.recipeId);
   }
 
   loadMore(inf: InfiniteScroll) {
@@ -101,6 +92,6 @@ export class Recipes implements OnInit {
   }
 
   deleteRecipe(recipeId: string) {
-    this.recipeService.delete(recipeId);
+    this.recipeStore.removeRecipe(recipeId);
   }
 }
