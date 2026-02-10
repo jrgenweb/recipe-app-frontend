@@ -1,28 +1,21 @@
 import { Component, inject, OnInit } from '@angular/core';
-import {
-  ɵInternalFormsSharedModule,
-  ReactiveFormsModule,
-  FormGroup,
-  FormControl,
-  Validators,
-  FormArray,
-  FormsModule,
-} from '@angular/forms';
-
-import { AsyncPipe } from '@angular/common';
+import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { IRecipeIngredient } from '@recipe/shared';
+import { IRecipeDetail } from '@recipe/shared';
 
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { IRecipeDetail, IRecipeIngredient } from '@recipe/shared';
 
-import { asyncImageValidator } from '../../../../shared/validators/async-image-validator';
-import { IngredientService } from '../../../../features/admin/features/ingredients/services/ingredient-service';
-import { CategoryService } from '../../../../features/admin/features/categories/services/category-service';
-import { RecipeService } from '../../../../features/recipes/services/recipe-service';
-import { CuisinService } from '../../../../features/admin/features/cuisines/services/cuisine-service';
+import { AsyncPipe } from '@angular/common';
+import { InfiniteScroll } from '../../../../../components/infinite-scroll/infinite-scroll';
+import { IngredientService } from '../../../../../features/admin/features/ingredients/services/ingredient-service';
+import { CategoryService } from '../../../../../features/admin/features/categories/services/category-service';
+import { RecipeService } from '../../../../../features/recipes/services/recipe-service';
+import { CuisinService } from '../../../../../features/admin/features/cuisines/services/cuisine-service';
+import { asyncImageValidator } from '../../../../../shared/validators/async-image-validator';
 
 @Component({
-  selector: 'app-add',
-  imports: [ɵInternalFormsSharedModule, ReactiveFormsModule, AsyncPipe, FormsModule, RouterLink],
+  selector: 'app-add-recipe',
+  imports: [ReactiveFormsModule, AsyncPipe, RouterLink, InfiniteScroll],
   templateUrl: './add-recipe.html',
   styleUrl: './add-recipe.scss',
 })
@@ -40,10 +33,11 @@ export class AddRecipe implements OnInit {
   private route: ActivatedRoute = inject(ActivatedRoute);
 
   constructor() {
-    this.ingredientService.loadNext();
     this.categoryService.getAll();
     this.cuisinService.getAll();
+    this.ingredientService.loadNext();
   }
+
   ngOnInit(): void {
     this.buildForm();
 
@@ -58,7 +52,10 @@ export class AddRecipe implements OnInit {
       });
     }
   }
-
+  loadMore(inf: InfiniteScroll) {
+    this.ingredientService.loadNext();
+    if (!this.ingredientService.isLoading) inf.done();
+  }
   buildForm() {
     this.recipeForm = new FormGroup({
       name: new FormControl('', Validators.required),
@@ -182,8 +179,8 @@ export class AddRecipe implements OnInit {
     this.recipeForm.markAllAsTouched();
     if (!this.recipeForm.valid) return;
 
-    const recipe = this.recipeForm.value;
-    delete recipe.selectedIngredientId;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { selectedIngredientId, ...recipe } = this.recipeForm.value;
 
     recipe.ingredients = recipe.ingredients.map((i: any) => ({
       ingredientId: i.ingredientId,

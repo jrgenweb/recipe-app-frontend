@@ -1,21 +1,24 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { RecipeService } from '../../../shared/services/recipe-service';
+
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { catchError, EMPTY, map } from 'rxjs';
 import { DatePipe } from '@angular/common';
-import { AddComment } from '../add-comment/add-comment';
+
 import { TimeAgoPipe } from '../../../shared/pipes/time-ago-pipe';
-import { RecipeGallery } from '../../../components/recipe-gallery/recipe-gallery';
+
 import { ProfilePicture } from '../../../components/profile-picture/profile-picture';
 import { Rating } from '../../../components/rating/rating';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { IRecipeDetail } from '@recipe/shared';
 import { IRecipeCommentResponse } from '@recipe/shared';
+import { RecipeGallery } from '../../../features/recipes/components/recipe-gallery/recipe-gallery';
+import { AddComment } from '../../../features/recipes/components/add-comment/add-comment';
+import { RecipeService } from '../../../features/recipes/services/recipe-service';
 
 @Component({
   selector: 'app-view-recipe',
-  imports: [RouterLink, AddComment, TimeAgoPipe, RecipeGallery, ProfilePicture, DatePipe, Rating],
+  imports: [RouterLink, TimeAgoPipe, RecipeGallery, ProfilePicture, DatePipe, Rating, AddComment],
   templateUrl: './view-recipe.html',
   styleUrl: './view-recipe.scss',
 })
@@ -79,7 +82,7 @@ export class ViewRecipe implements OnInit {
   }
 
   onChangeRate(rate: { recipeId: string; rate: number }) {
-    this.recipeService.rateRecipe(rate.recipeId, rate.rate);
+    this.recipeService.updateRating(rate.recipeId, rate.rate);
     this.avgRating.set(rate.rate); // frissíti a jelzett értékelést
 
     this.loadRecipe();

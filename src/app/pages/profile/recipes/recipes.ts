@@ -4,13 +4,16 @@ import { RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { IRecipeList, IRecipeListResponse } from '@recipe/shared';
 import { AsyncPipe } from '@angular/common';
-import { RecipeService } from '../../../shared/services/recipe-service';
-import { FavoriteService } from '../../../shared/services/favorite-service';
+
 import { AuthService } from '../../../shared/services/auth-service';
-import { RecipeFilter } from '../../../components/recipe-filter/recipe-filter';
+
 import { ConfirmModal } from '../../../components/confirm-modal/confirm-modal';
-import { RecipeCard } from '../../../components/recipe-card/recipe-card';
+
 import { InfiniteScroll } from '../../../components/infinite-scroll/infinite-scroll';
+import { RecipeFilter } from '../../../features/recipes/components/recipe-filter/recipe-filter';
+import { RecipeCard } from '../../../features/recipes/components/recipe-card/recipe-card';
+import { RecipeService } from '../../../features/recipes/services/recipe-service';
+import { FavoriteService } from '../../../features/recipes/services/favorite-service';
 
 @Component({
   selector: 'app-recipes',
@@ -39,7 +42,7 @@ export class Recipes implements OnInit {
 
   constructor() {}
   ngOnInit(): void {
-    this.recipeService.reset();
+    //this.recipeService.reset();
     this.loadNext();
     this.favoriteService.getAll();
   }
@@ -49,7 +52,7 @@ export class Recipes implements OnInit {
     img.src = 'https://placehold.co/600x400';
   }
   setRate(rate: { recipeId: string; rate: number }) {
-    this.recipeService.rateRecipe(rate.recipeId, rate.rate);
+    this.recipeService.updateRating(rate.recipeId, rate.rate);
   }
   setFavorite(favorite: { recipeId: string; state: boolean }) {
     if (favorite.state) {
@@ -63,16 +66,16 @@ export class Recipes implements OnInit {
     this.loadNext();
   }
   loadNext() {
-    this.recipeService.loadNext(this.searchString, this.categoryId, '', [], true);
+    //this.recipeService.loadNext(this.searchString, this.categoryId, '', [], true);
   }
   changeCategory(categoryId: string) {
     this.categoryId = categoryId;
-    this.recipeService.reset();
+    //this.recipeService.reset();
     this.loadNext();
   }
   changeSearchString(searchString: string) {
     this.searchString = searchString;
-    this.recipeService.reset();
+    //this.recipeService.reset();
     this.loadNext();
   }
 

@@ -10,22 +10,19 @@
 </div>
 
 <div class="row mt-5">
-  @for (recipe of vm().recipes.data; track $index) {
+  @for (recipe of recipeStore.recipes(); track $index) {
     <div class="col-6 col-md-6 col-lg-4 mb-3">
-      <app-recipe-card
-        [recipe]="recipe"
-        [isFavorite]="vm().favoriteRecipes.includes(recipe.id) ? true : false"
-      ></app-recipe-card>
+      <app-recipe-card [recipe]="recipe" [isFavorite]="false"></app-recipe-card>
     </div>
   }
 </div>
-@if (vm().loading) {
+@if (recipeStore.isLoading()) {
   <div class="d-flex justify-content-center align-items-center">
     <div class="spinner-border text-primary spinner-border-lg" role="status">
       <span class="visually-hidden">Betöltés...</span>
     </div>
   </div>
-} @else if (!vm().loading && vm().recipes.data.length === 0) {
+} @else if (!recipeStore.isLoading && recipeStore.recipes().length === 0) {
   <p class="text-center my-3">Nincs találat</p>
 }
-<app-infinite-scroll (loadMore)="loadMore(inf)" #inf></app-infinite-scroll>
+<!-- <app-infinite-scroll (loadMore)="loadMore(inf)" #inf></app-infinite-scroll> -->

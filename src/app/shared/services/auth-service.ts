@@ -59,6 +59,11 @@ export class AuthService {
         localStorage.setItem(this.tokenKey, res.access_token);
         this.isLoggedin$.next(true);
         this.currentUser.set(res.user);
+        if (this.currentUser()?.role === 'ADMIN') {
+          this.router.navigate(['/dashboard']);
+        } else {
+          this.router.navigate(['/recipes']);
+        }
       }),
     );
   }

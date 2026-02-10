@@ -3,8 +3,8 @@ import { Recipes } from './pages/recipes/recipes';
 
 import { Recipes as RecipesManager } from './pages/profile/recipes/recipes';
 import { Error } from './pages/error/error';
-import { SignIn } from './pages/sign-in/sign-in';
-import { SignUp } from './pages/sign-up/sign-up';
+import { SignIn } from './pages/auth/sign-in/sign-in';
+import { SignUp } from './pages/auth/sign-up/sign-up';
 
 import { ViewRecipe } from './pages/recipes/view-recipe/view-recipe';
 import { Profile } from './pages/profile/profile';
@@ -18,20 +18,19 @@ import { General } from './pages/profile/general/general';
 import { Changepassword } from './pages/profile/changepassword/changepassword';
 
 import { Pages } from './pages/pages';
-import { Dashboard } from './dashboard/dashboard';
+import { Dashboard } from './pages/admin/dashboard';
 import { roleGuard } from './shared/guards/role.guard';
 import { Delete } from './pages/profile/delete/delete';
-import { Summary } from './dashboard/summary/summary';
+import { Summary } from './pages/admin/summary/summary';
 
-import { SignIn as AdminSignIn } from './dashboard/sign-in/sign-in';
-import { Ingredients as AdminIngredients } from './dashboard/manage/ingredients/ingredients';
-import { Categories as AdminCategories } from './dashboard/manage/categories/categories';
-import { Recipes as AdminRecipes } from './dashboard/manage/recipes/recipes';
-import { AddRecipe as AdminAddRecipe } from './dashboard/manage/recipes/add-recipe/add-recipe';
-import { Manage } from './dashboard/manage/manage';
-import { Users as AdminUsers } from './dashboard/manage/users/users';
-import { AddUser as AdminAddUser } from './dashboard/manage/users/add-user/add-user';
-import { Cuisines as AdminCuisines } from './dashboard/manage/cuisines/cuisines';
+import { Ingredients as AdminIngredients } from './pages/admin/manage/ingredients/ingredients';
+import { Categories as AdminCategories } from './pages/admin/manage/categories/categories';
+import { Recipes as AdminRecipes } from './pages/admin/manage/recipes/recipes';
+import { AddRecipe as AdminAddRecipe } from './pages/admin/manage/recipes/add-recipe/add-recipe';
+import { Manage } from './pages/admin/manage/manage';
+import { Users as AdminUsers } from './pages/admin/manage/users/users';
+import { AddUser as AdminAddUser } from './pages/admin/manage/users/add-user/add-user';
+import { Cuisines as AdminCuisines } from './pages/admin/manage/cuisines/cuisines';
 import { Role } from '@recipe/shared';
 
 export const routes: Routes = [
@@ -77,8 +76,6 @@ export const routes: Routes = [
       { path: '', redirectTo: '/recipes', pathMatch: 'full' },
     ],
   },
-
-  { path: 'dashboard/signin', component: AdminSignIn },
 
   {
     path: 'dashboard',

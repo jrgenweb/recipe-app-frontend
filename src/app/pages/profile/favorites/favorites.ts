@@ -1,9 +1,9 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { FavoriteService } from '../../../shared/services/favorite-service';
-import { AsyncPipe } from '@angular/common';
 
-import { RecipeCardFavorite } from '../../../components/recipe-card-favorite/recipe-card-favorite';
-import { RecipeCard } from '../../../components/recipe-card/recipe-card';
+import { AsyncPipe } from '@angular/common';
+import { RecipeCard } from '../../../features/recipes/components/recipe-card/recipe-card';
+import { RecipeCardFavorite } from '../../../features/recipes/components/recipe-card-favorite/recipe-card-favorite';
+import { FavoriteService } from '../../../features/recipes/services/favorite-service';
 
 @Component({
   selector: 'app-favorites',
