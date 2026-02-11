@@ -25,7 +25,7 @@
       <span class="visually-hidden">Betöltés...</span>
     </div>
   </div>
-} @else if (!recipeStore.isLoading && recipeStore.recipes().length === 0) {
+} @else if (!recipeStore.isLoading() && recipeStore.recipes().length === 0) {
   <p class="text-center my-3">Nincs találat</p>
 }
-<!-- <app-infinite-scroll (loadMore)="loadMore(inf)" #inf></app-infinite-scroll> -->
+<app-infinite-scroll (loadMore)="loadMore(inf)" #inf></app-infinite-scroll>

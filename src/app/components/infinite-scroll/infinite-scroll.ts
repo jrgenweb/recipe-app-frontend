@@ -39,6 +39,13 @@ export class InfiniteScroll implements AfterViewInit, OnDestroy {
     );
 
     this.observer.observe(this.anchor.nativeElement);
+    requestAnimationFrame(() => {
+      const rect = this.anchor.nativeElement.getBoundingClientRect();
+      if (rect.top < window.innerHeight + 200) {
+        this.loading = true;
+        this.loadMore.emit(this);
+      }
+    });
   }
 
   done() {
@@ -50,3 +57,5 @@ export class InfiniteScroll implements AfterViewInit, OnDestroy {
     this.observer.disconnect();
   }
 }
+
+// Ha már a képernyőn van az anchor, azonnal triggereljünk

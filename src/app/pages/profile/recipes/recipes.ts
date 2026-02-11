@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { Observable } from 'rxjs';
@@ -17,20 +17,13 @@ import { MyRecipeCard } from '../../../features/recipes/components/my-recipe-car
 
 @Component({
   selector: 'app-recipes',
-  imports: [RouterLink, RecipeFilter, ConfirmModal, RecipeCard, InfiniteScroll, MyRecipeCard],
+  imports: [RouterLink, RecipeFilter, ConfirmModal, InfiniteScroll, MyRecipeCard],
   templateUrl: './recipes.html',
   styleUrl: './recipes.scss',
 })
 export class Recipes implements OnInit {
-  searchString = '';
-  categoryId = '';
-
   public authService = inject(AuthService);
   public recipeStore = inject(RecipeStore);
-  //pagination
-  currentPage = 1;
-  take = 1;
-  skip = 0;
 
   isShowDeleteConfirm = false;
   selectedRecipe: IRecipeList | null = null;
@@ -39,7 +32,6 @@ export class Recipes implements OnInit {
   ngOnInit(): void {
     //this.recipeService.reset();
     this.recipeStore.getOwnRecipes();
-    this.recipeStore.loadFavorites();
   }
 
   onImageError(event: Event) {
@@ -60,22 +52,15 @@ export class Recipes implements OnInit {
     //this.recipeService.loadNext(this.searchString, this.categoryId, '', [], true);
   }
   changeCategory(categoryId: string) {
-    this.categoryId = categoryId;
-    //this.recipeService.reset();
-    this.loadNext();
+    this.recipeStore.updateMyFilter({ categoryId });
   }
-  changeSearchString(searchString: string) {
-    this.searchString = searchString;
-    //this.recipeService.reset();
-    this.loadNext();
+  changeSearchString(search: string) {
+    this.recipeStore.updateMyFilter({ search });
   }
 
-  onPageChange(event: { skip: number; take: number; page: number }) {
-    this.currentPage = event.page;
-    this.skip = event.skip;
-    this.take = event.take;
+  changeCuisine(cuisineId: string) {
+    this.recipeStore.updateMyFilter({ cuisineId });
   }
-
   showDeleteConfirm(recipe: IRecipeList) {
     this.selectedRecipe = recipe;
     if (this.selectedRecipe) {

@@ -1,4 +1,4 @@
-import { inject, Injectable, signal, computed } from '@angular/core';
+import { inject, Injectable, signal, computed, effect } from '@angular/core';
 import { RecipeService } from '../services/recipe-service';
 import {
   IRecipeListResponse,
@@ -6,7 +6,7 @@ import {
   ICreateRecipe,
   IRecipeDetail,
 } from '@recipe/shared';
-import { finalize, tap } from 'rxjs';
+import { debounceTime, finalize, Subject, tap } from 'rxjs';
 import { FavoriteService } from '../services/favorite-service';
 import { ToastService } from '../../../shared/services/toast-service';
 import { IUpdateRecipe } from '../../../shared/interfaces/update-recipe.interface';
@@ -36,8 +36,32 @@ export class RecipeStore {
   readonly selectedRecipe = computed(() => this._selectedRecipe());
   readonly myRecipes = computed(() => this._myRecipes().data);
 
+  //filterezéshez
+  readonly filters = signal({
+    search: '',
+    categoryId: '',
+    cuisineId: '',
+    ingredientIds: [] as string[],
+  });
+  readonly myFilters = signal({ search: '', categoryId: '', cuisineId: '' });
+
   isFavorite = (recipeId: string) => computed(() => this._favoriteRecipeIds().includes(recipeId));
 
+  // --- Trigger subject a debounce-hoz ---
+  private filterChange$ = new Subject<void>();
+  private myFilterChange$ = new Subject<void>();
+
+  constructor() {
+    this.filterChange$.pipe(debounceTime(300)).subscribe(() => {
+      const { search, categoryId, cuisineId, ingredientIds } = this.filters();
+      this.loadAll(search, categoryId, cuisineId, ingredientIds);
+    });
+
+    this.myFilterChange$.pipe(debounceTime(300)).subscribe(() => {
+      const myFilters = this.myFilters();
+      this.getOwnRecipes(myFilters.search, myFilters.categoryId, myFilters.cuisineId);
+    });
+  }
   // --- Actions ---
 
   /** Kezdeti betöltés vagy keresés */
@@ -52,12 +76,13 @@ export class RecipeStore {
   }
 
   /** Végtelen görgetéshez (Infinite Scroll) */
-  loadNext(search?: string, categoryId?: string, cuisinId?: string, ingredientIds?: string[]) {
+  loadNext() {
     if (this._loading() || (this.total() > 0 && this.recipes().length >= this.total())) return;
     this._loading.set(true);
     const skip = this.recipes().length;
+    const { search, categoryId, cuisineId, ingredientIds } = this.filters();
     this.recipeService
-      .fetchRecipes(search, categoryId, cuisinId, ingredientIds, skip, 20, false)
+      .fetchRecipes(search, categoryId, cuisineId, ingredientIds, skip, 20, false)
       .pipe(finalize(() => this._loading.set(false)))
       .subscribe((resp) => {
         this._recipes.update((state) => ({
@@ -67,9 +92,13 @@ export class RecipeStore {
       });
   }
 
-  getOwnRecipes() {
+  getOwnRecipes(search?: string, categoryId?: string, cuisineId?: string) {
+    if (this._loading() || (this.total() > 0 && this.recipes().length >= this.total())) return;
     this._loading.set(true);
-    this.recipeService.getOwnRecipes().subscribe({
+    const skip = this.recipes().length;
+
+    this._loading.set(true);
+    this.recipeService.getOwnRecipes(search, categoryId, cuisineId).subscribe({
       next: (resp) => {
         this._myRecipes.set(resp);
       },
@@ -90,6 +119,22 @@ export class RecipeStore {
         },
         error: (err: { message: string }) => this._error.set(err.message),
       });
+  }
+
+  updateFilters(
+    partial: Partial<{
+      search: string;
+      categoryId: string;
+      cuisineId: string;
+      ingredientIds: string[];
+    }>,
+  ) {
+    this.filters.update((f) => ({ ...f, ...partial }));
+    this.filterChange$.next();
+  }
+  updateMyFilter(partial: Partial<{ search: string; categoryId: string; cuisineId: string }>) {
+    this.myFilters.update((f) => ({ ...f, ...partial }));
+    this.myFilterChange$.next();
   }
 
   /** Kedvencek betöltése (például alkalmazás indításakor vagy login után) */
@@ -132,13 +177,6 @@ export class RecipeStore {
       this._favoriteRecipeIds.update((ids) => [...ids, recipeId]);
 
       const setFavoritedRecipe = this.recipes().find((r) => r.id === recipeId);
-
-      /*
-       recipeId: string;
-          userId: string;
-          createdAt: string;
-          updatedAt: string;
-          recipe: IRecipeList;*/
 
       if (setFavoritedRecipe) {
         this._favoriteRecipeIds.update((ids) => [...ids, recipeId]);
