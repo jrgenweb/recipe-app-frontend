@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 
-import { BehaviorSubject, delay, forkJoin, map, tap } from 'rxjs';
+import { forkJoin, map, tap } from 'rxjs';
 
 import {
   IRecipeListResponse,
@@ -33,7 +33,7 @@ export class RecipeService {
     if (ingredientIds && ingredientIds.length > 0) {
       params = params.set('ingredientIds', ingredientIds.join(','));
     }
-    return this.http.get<IRecipeListResponse>(API_URL + '/recipes', { params }).pipe(delay(500));
+    return this.http.get<IRecipeListResponse>(API_URL + '/recipes', { params });
   }
 
   fetchRecipes(
@@ -56,9 +56,9 @@ export class RecipeService {
     if (skip) params = params.set('skip', skip);
     if (take) params = params.set('take', take);
 
-    return this.http
-      .get<IRecipeListResponse>(API_URL + (own ? '/recipes/my' : '/recipes'), { params })
-      .pipe(delay(500)); //delay(500)
+    return this.http.get<IRecipeListResponse>(API_URL + (own ? '/recipes/my' : '/recipes'), {
+      params,
+    });
   }
 
   getOwnRecipes(search?: string, categoryId?: string, cuisineId?: string) {

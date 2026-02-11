@@ -17,30 +17,24 @@
 @let empty = recipes.length === 0;
 
 <div class="row mt-3">
-  @if (!isLoading && !empty) {
-    @for (recipe of recipeStore.recipes(); track $index) {
-      <div class="col-6 col-md-4 col-lg-3 mb-3">
-        <app-admin-recipe-card [recipe]="recipe">
-          <div class="fs-4 mt-3 d-flex gap-2 justify-content-between">
-            <a [routerLink]="['/dashboard/manage/recipes/edit', recipe.id]">
-              <i class="bi bi-pencil text-success"></i
-            ></a>
-            <a href="#" (click)="showDeleteConfirm(recipe); $event.preventDefault()"
-              ><i class="bi bi-trash text-danger"></i
-            ></a>
-          </div>
-        </app-admin-recipe-card>
-      </div>
-    }
-  } @else if (!isLoading && empty) {
+  @for (recipe of recipeStore.recipes(); track $index) {
+    <div class="col-6 col-md-4 col-lg-3 mb-3">
+      <app-admin-recipe-card [recipe]="recipe">
+        <div class="fs-4 mt-3 d-flex gap-2 justify-content-between">
+          <a [routerLink]="['/dashboard/manage/recipes/edit', recipe.id]">
+            <i class="bi bi-pencil text-success"></i
+          ></a>
+          <a href="#" (click)="showDeleteConfirm(recipe); $event.preventDefault()"
+            ><i class="bi bi-trash text-danger"></i
+          ></a>
+        </div>
+      </app-admin-recipe-card>
+    </div>
+  } @empty {
     <p class="text-center my-3">Nincs találat</p>
   }
   @if (isLoading) {
-    <div class="d-flex justify-content-center align-items-center">
-      <div class="spinner-border text-primary spinner-border-lg" role="status">
-        <span class="visually-hidden">Betöltés...</span>
-      </div>
-    </div>
+    <app-spinner></app-spinner>
   }
 </div>
 

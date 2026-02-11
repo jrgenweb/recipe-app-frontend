@@ -8,18 +8,11 @@ import { InfiniteScroll } from '../../../../components/infinite-scroll/infinite-
 import { AdminRecipeStore } from '../../../../features/admin/features/recipes/stores/admin-recipe.store';
 import { AdminRecipeFilter } from '../../../../features/admin/features/recipes/components/admin-recipe-filter/admin-recipe-filter';
 import { AdminRecipeCard } from '../../../../features/admin/features/recipes/components/admin-recipe-card/admin-recipe-card';
+import { Spinner } from '../../../../components/spinner/spinner';
 
 @Component({
   selector: 'app-recipes',
-  imports: [
-    RouterLink,
-    RouterLinkActive,
-
-    InfiniteScroll,
-    ConfirmModal,
-    AdminRecipeFilter,
-    AdminRecipeCard,
-  ],
+  imports: [RouterLink, InfiniteScroll, ConfirmModal, AdminRecipeFilter, AdminRecipeCard, Spinner],
   templateUrl: './recipes.html',
   styleUrl: './recipes.scss',
 })
