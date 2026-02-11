@@ -8,8 +8,6 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { asyncImageValidator } from '../../../../../shared/validators/async-image-validator';
 import { MatchValidator } from '../../../../../shared/validators/match-validator';
 import { AdminUserStore } from '../../../../../features/admin/features/users/stores/user.store';
-import { toObservable } from '@angular/core/rxjs-interop';
-import { filter, take } from 'rxjs';
 
 @Component({
   selector: 'app-add-user',
@@ -27,26 +25,13 @@ export class AddUser {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
-  user = signal<IUser | undefined>(undefined);
-
   constructor() {
     effect(() => {
       const user = this.userStore.selectedUser();
       if (user) {
-        this.user.set(user);
-        this.initializeForm(true);
+        this.pathForm(user);
       }
     });
-    toObservable(this.userStore.selectedUser)
-      .pipe(
-        filter((user): user is IUser => !!user),
-        take(1), // automatikus unsubscribe!
-      )
-      .subscribe((user) => {
-        this.user.set(user);
-        console.log(user);
-        this.initializeForm(true);
-      });
   }
   ngOnInit(): void {
     this.initializeForm();
@@ -63,22 +48,27 @@ export class AddUser {
     this.userStore.getById(userId);
   }
 
-  private initializeForm(isEdit = false) {
-    const passwordValidators = isEdit
-      ? [Validators.minLength(6)]
-      : [Validators.required, Validators.minLength(6)];
-
+  private initializeForm() {
     this.addUserForm = new FormGroup(
       {
-        email: new FormControl(this.user()?.email ?? '', [Validators.required, Validators.email]),
-        picture: new FormControl(this.user()?.picture ?? '', [], [asyncImageValidator()]),
-        name: new FormControl(this.user()?.name ?? '', [Validators.required]),
-        role: new FormControl(this.user()?.role ?? 'USER', [Validators.required]),
-        password: new FormControl('', passwordValidators),
-        confirmpassword: new FormControl('', passwordValidators),
+        email: new FormControl('', [Validators.required, Validators.email]),
+        picture: new FormControl('', [], [asyncImageValidator()]),
+        name: new FormControl('', [Validators.required]),
+        role: new FormControl('USER', [Validators.required]),
+        password: new FormControl('', [Validators.required, Validators.minLength(6)]),
+        confirmpassword: new FormControl('', [Validators.required, Validators.minLength(6)]),
       },
       { validators: [MatchValidator.validate('password', 'confirmpassword')] },
     );
+  }
+
+  private pathForm(user: IUser) {
+    this.addUserForm.patchValue({
+      email: user.email,
+      name: user.name,
+      picture: user.picture,
+      role: user.role,
+    });
   }
 
   public onSubmit() {

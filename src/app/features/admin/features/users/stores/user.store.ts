@@ -68,6 +68,8 @@ export class AdminUserStore {
   }
 
   getById(userId: string) {
+    this._loading.set(true);
+    this._selectedUser.set(undefined);
     this.userService.getById(userId).subscribe({
       next: (user) => {
         if (user && user.id) {
@@ -75,6 +77,9 @@ export class AdminUserStore {
         } else {
           this.toastService.add({ message: 'Hiba történt', type: 'danger' });
         }
+      },
+      complete: () => {
+        this._loading.set(false);
       },
     });
   }
