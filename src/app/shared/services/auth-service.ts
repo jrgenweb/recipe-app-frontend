@@ -76,10 +76,15 @@ export class AuthService {
     );
   }
 
+  checkEmail(email: string) {
+    return this.http.post<{ available: boolean; message: String }>(API_URL + '/auth/check-email/', {
+      email,
+    });
+  }
   // Regisztráció
 
   register(user: IRegister) {
-    return this.http.post(API_URL + '/auth/register', user);
+    return this.http.post<{ user: IUser; access_token: string }>(API_URL + '/auth/register', user);
   }
 
   // Kijelentkezés

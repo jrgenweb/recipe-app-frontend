@@ -21,7 +21,9 @@
         [class.is-invalid]="email?.invalid && email?.dirty"
         [class.is-valid]="email?.valid && email?.dirty"
       />
-      @if (email?.dirty && email?.invalid) {
+      @if (email?.getError('emailTaken')) {
+        <small id="emailHelpId" class="form-text text-danger">Ez az email cím foglalt</small>
+      } @else if (email?.dirty && email?.invalid) {
         <small id="emailHelpId" class="form-text text-danger">Érvénytelen email cím</small>
       }
     </div>

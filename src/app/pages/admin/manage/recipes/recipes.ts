@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { IRecipeIngredient, IRecipeList } from '@recipe/shared';
 import { ConfirmModal } from '../../../../components/confirm-modal/confirm-modal';
 import { InfiniteScroll } from '../../../../components/infinite-scroll/infinite-scroll';
@@ -19,7 +19,7 @@ import { Spinner } from '../../../../components/spinner/spinner';
 export class Recipes implements OnInit {
   // Stores
   public recipeStore = inject(AdminRecipeStore);
-
+  private route = inject(Router);
   // Delete modal
   isShowDeleteConfirm = false;
   selectedRecipe = signal<IRecipeList | null>(null);
@@ -51,6 +51,8 @@ export class Recipes implements OnInit {
     const ingredientIds = ingredients.map((i) => i.id);
     this.recipeStore.updateFilters({ ingredientIds });
   }
+
+  //delete
 
   showDeleteConfirm(recipe: IRecipeList) {
     console.log('sad');
