@@ -1,7 +1,7 @@
-import { Component, EventEmitter, inject, Output } from '@angular/core';
+import { Component, computed, EventEmitter, inject, Output } from '@angular/core';
 import { AdminCategoryStore } from '../../../categories/stores/admin-category.store';
 import { AdminCuisineStore } from '../../../cuisines/stores/admin-cuisine.store';
-import { ISelect } from '../../../../../recipes/components/select/select';
+
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -19,31 +19,21 @@ export class AdminRecipeFilter {
   selectedCategoryId = '';
   selectedCuisineId = '';
 
-  categorySelectItems!: ISelect[];
-  cuisinSelectItems!: ISelect[];
-
   public categoryStore = inject(AdminCategoryStore);
   public cuisineStore = inject(AdminCuisineStore);
+
+  categorySelectItems = computed(() =>
+    this.categoryStore.categories().map((c) => ({ value: c.id, label: c.name })),
+  );
+  cuisinSelectItems = computed(() =>
+    this.cuisineStore.cuisines().map((c) => ({ value: c.id, label: c.name })),
+  );
 
   constructor() {}
 
   ngOnInit(): void {
     this.categoryStore.loadAll();
     this.cuisineStore.loadAll();
-
-    this.categorySelectItems = this.categoryStore.categories().map((c) => {
-      return {
-        value: c.id,
-        label: c.name,
-      };
-    });
-
-    this.cuisinSelectItems = this.cuisineStore.cuisines().map((c) => {
-      return {
-        value: c.id!,
-        label: c.name,
-      };
-    });
   }
 
   onCategoryChange() {
