@@ -27,31 +27,17 @@ export class Categories {
   searchString = signal('');
   scrollSignal = signal(false);
 
-  // Computed view model
-
-  private changeFilter() {
-    this.searchString();
-    this.store.reset();
-    this.store.loadAll(this.searchString());
-  }
-
   constructor() {
-    this.changeFilter();
+    this.store.loadAll();
   }
-  /* 
+
   loadMore(inf: InfiniteScroll) {
-    this.loadNext(inf);
+    this.store.loadNext();
     inf.done();
   }
-  loadNext(inf?: InfiniteScroll) {
-    this.categoryService.loadNext(this.searchString());
-    if (!this.categoryService.isLoading) {
-      inf?.done();
-    }
-  } */
-  changeSearchString(searchString: string) {
-    this.searchString.set(searchString);
-    this.changeFilter();
+
+  changeSearchString(search: string) {
+    this.store.updateFilter({ search });
   }
   showDeleteConfirm(category: IRecipeCategory) {
     this.selectedCategory = category;
@@ -64,7 +50,11 @@ export class Categories {
     this.isConfirmModalShow = false;
   }
   openAddCategoryModal(category?: IRecipeCategory) {
-    if (category) this.selectedCategory = category;
+    if (category) {
+      this.selectedCategory = category;
+    } else {
+      this.selectedCategory = undefined;
+    }
     this.isOpenAddCategoryModal = true;
   }
 }

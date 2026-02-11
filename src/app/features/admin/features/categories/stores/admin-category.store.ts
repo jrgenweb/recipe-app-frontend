@@ -1,7 +1,7 @@
 import { inject, Injectable, signal, computed } from '@angular/core';
 
 import { IRecipeCategoryResponse, IRecipeCategory } from '@recipe/shared';
-import { finalize, tap } from 'rxjs';
+import { debounceTime, finalize, Subject, tap } from 'rxjs';
 import { AdminCategoryService } from '../services/admin-category-service';
 import { ToastService } from '../../../../../shared/services/toast-service';
 
@@ -23,8 +23,15 @@ export class AdminCategoryStore {
   readonly total = computed(() => this._categories().total);
   readonly isLoading = computed(() => this._loading());
 
-  // --- Actions ---
+  readonly filters = signal({ search: '' });
 
+  private filterChange$ = new Subject<void>();
+  constructor() {
+    this.filterChange$.pipe(debounceTime(300)).subscribe(() => {
+      const { search } = this.filters();
+      this.loadAll(search);
+    });
+  }
   /** Kezdeti betöltés vagy keresés */
   loadAll(search?: string) {
     this._loading.set(true);
@@ -70,6 +77,10 @@ export class AdminCategoryStore {
     });
   }
 
+  updateFilter(partial: Partial<{ search: string }>) {
+    this.filters.update((f) => ({ ...f, ...partial }));
+    this.filterChange$.next();
+  }
   update(category: IRecipeCategory) {
     this._loading.set(true);
     this.categoryService.update(category).subscribe({
