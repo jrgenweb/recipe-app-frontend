@@ -1,4 +1,4 @@
-@let isLoggedIn = authService.isLoggedin$ | async;
+@let isLoggedIn = authService.isAuthenticated();
 @if (isLoggedIn) {
   <div class="rounded-2 bg-light p-2">
     <form [formGroup]="commentForm" (ngSubmit)="onSubmit()">

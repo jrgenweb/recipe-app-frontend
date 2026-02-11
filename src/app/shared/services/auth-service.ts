@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { BehaviorSubject, Observable, of, tap } from 'rxjs';
 import { API_URL } from '../../config/config';
 import { ICreateUser, IRegister, IUser, LoginResponse } from '@recipe/shared';
@@ -24,46 +24,54 @@ export class AuthService {
   private tokenKey = 'access_token';
 
   public currentUser = signal<IUser | null>(null);
-  public isLoggedin$ = new BehaviorSubject<boolean>(false);
+  public isInitialized = signal<boolean>(false); // Ez lesz a kulcs!
+  //public isLoggedin$ = new BehaviorSubject<boolean>(false);
 
   private http: HttpClient = inject(HttpClient);
   private router: Router = inject(Router);
   private toastService = inject(ToastService);
+
+  public isAuthenticated = computed(() => !!this.currentUser());
+
   constructor() {
+    this.initializeAuth();
+  }
+
+  private initializeAuth() {
     if (this.getToken()) {
-      this.isLoggedin$.next(true);
       this.loadCurrentUser();
     }
   }
-
   loadCurrentUser() {
     const token = this.getToken();
-    if (!token) return; // nincs token, nem hívjuk
+    if (!token) {
+      this.isInitialized.set(true); // Nincs token, inicializálva vagyunk (üresen)
+      return;
+    }
 
-    this.http
-      .get<IUser>(API_URL + '/auth/me', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .subscribe({
-        next: (user) => this.currentUser.set(user),
-        //error: () => this.logout(), // ha token érvénytelen
-      });
+    this.http.get<IUser>(API_URL + '/auth/me').subscribe({
+      next: (user) => {
+        this.currentUser.set(user);
+        this.isInitialized.set(true);
+      },
+      error: () => {
+        this.logout(); // Törli a tokent
+        this.isInitialized.set(true); // Hiba esetén is végeztünk az inicializálással
+      },
+    });
+  }
+  private redirectAfterLogin() {
+    const role = this.currentUser()?.role;
+    const target = role === 'ADMIN' ? '/dashboard' : '/recipes';
+    this.router.navigate([target]);
   }
 
-  // Bejelentkezés
   login(email: string, password: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(API_URL + '/auth/login', { email, password }).pipe(
+    return this.http.post<LoginResponse>(`${API_URL}/auth/login`, { email, password }).pipe(
       tap((res) => {
         localStorage.setItem(this.tokenKey, res.access_token);
-        this.isLoggedin$.next(true);
         this.currentUser.set(res.user);
-        if (this.currentUser()?.role === 'ADMIN') {
-          this.router.navigate(['/dashboard']);
-        } else {
-          this.router.navigate(['/recipes']);
-        }
+        this.redirectAfterLogin();
       }),
     );
   }
@@ -77,7 +85,7 @@ export class AuthService {
   // Kijelentkezés
   logout() {
     localStorage.removeItem(this.tokenKey);
-    this.isLoggedin$.next(false);
+    //this.isLoggedin$.next(false);
     this.currentUser.set(null); // törli a felhasználót
     this.router.navigate(['/']);
   }

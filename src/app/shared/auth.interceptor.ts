@@ -1,16 +1,15 @@
-import { HttpRequest, HttpHandlerFn, HttpEvent } from '@angular/common/http';
+import { HttpRequest, HttpHandlerFn, HttpEvent, HttpInterceptorFn } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
 
-export const authInterceptor =
-  (getToken: () => string | null) =>
-  (req: HttpRequest<any>, next: HttpHandlerFn): Observable<HttpEvent<any>> => {
-    const token = getToken();
-    if (token) {
-      const authReq = req.clone({
-        setHeaders: { Authorization: `Bearer ${token}` },
-      });
-      return next(authReq);
-    }
-    return next(req);
-  };
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  const token = localStorage.getItem('access_token');
+
+  if (token) {
+    const cloned = req.clone({
+      setHeaders: { Authorization: `Bearer ${token}` },
+    });
+    return next(cloned);
+  }
+  return next(req);
+};

@@ -12,8 +12,8 @@ import { Profile } from './pages/profile/profile';
 import { Favorites } from './pages/profile/favorites/favorites';
 
 import { AddRecipe } from './pages/profile/recipes/add-recipe/add-recipe';
-import { AuthGuard } from './shared/guards/auth.guard';
-import { GuestGuard } from './shared/guards/ghuest.guard';
+import { authGuard } from './shared/guards/auth.guard';
+import { guestGuard } from './shared/guards/ghuest.guard';
 import { General } from './pages/profile/general/general';
 import { Changepassword } from './pages/profile/changepassword/changepassword';
 
@@ -51,7 +51,7 @@ export const routes: Routes = [
       {
         path: 'profile',
         component: Profile, // Mindig betöltődik a tab menüvel
-        canActivate: [AuthGuard],
+        canActivate: [authGuard],
         children: [
           { path: '', redirectTo: 'general', pathMatch: 'full' }, // alapértelmezett tab
           { path: 'general', component: General },
@@ -71,8 +71,8 @@ export const routes: Routes = [
       },
 
       { path: 'error', component: Error },
-      { path: 'signin', component: SignIn, canActivate: [GuestGuard] },
-      { path: 'signup', component: SignUp, canActivate: [GuestGuard] },
+      { path: 'signin', component: SignIn, canActivate: [guestGuard] },
+      { path: 'signup', component: SignUp, canActivate: [guestGuard] },
       { path: '', redirectTo: '/recipes', pathMatch: 'full' },
     ],
   },
@@ -80,8 +80,8 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     component: Dashboard,
-    //canActivate: [roleGuard],
-    //data: { role: Role.ADMIN },
+    canActivate: [roleGuard],
+    data: { role: Role.ADMIN },
     children: [
       { path: '', redirectTo: 'summary', pathMatch: 'full' },
       {

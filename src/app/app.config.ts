@@ -9,8 +9,6 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(
-      withInterceptors([authInterceptor(() => localStorage.getItem('access_token'))]),
-    ),
+    provideHttpClient(withInterceptors([authInterceptor])),
   ],
 };
