@@ -147,8 +147,8 @@ export class AuthService {
       .subscribe({
         next: (resp) => {
           if (resp.deleted) this.logout(); // Kijelentkezés a profil törlése után
-          this.router.navigate(['/']);
           this.toastService.add({ message: 'Sikeresen törölted a profilod', type: 'success' });
+          this.router.navigate(['/']);
         },
       });
   }

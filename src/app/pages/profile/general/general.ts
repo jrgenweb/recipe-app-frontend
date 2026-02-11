@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { AuthService } from '../../../shared/services/auth-service';
 import { asyncImageValidator } from '../../../shared/validators/async-image-validator';
 import { ProfilePicture } from '../../../components/profile-picture/profile-picture';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-general',
@@ -15,21 +16,19 @@ export class General implements OnInit {
 
   private fb: FormBuilder = inject(FormBuilder);
   public authService: AuthService = inject(AuthService);
-  constructor() {}
-  ngOnInit(): void {
-    const user = this.authService.currentUser();
-
-    this.generalForm = this.fb.group({
-      name: [user?.name, Validators.required],
-      picture: [user?.picture, Validators.required, [asyncImageValidator()]],
-      email: [user?.email, [Validators.required, Validators.email]],
+  constructor() {
+    toObservable(this.authService.currentUser).subscribe((user) => {
+      this.generalForm = this.fb.group({
+        name: [user?.name, Validators.required],
+        picture: [user?.picture, Validators.required, [asyncImageValidator()]],
+        email: [user?.email, [Validators.required, Validators.email]],
+      });
     });
   }
+  ngOnInit(): void {}
   onEdit() {
     this.generalForm.markAllAsTouched();
-
     if (this.generalForm.invalid) return;
-
     this.authService.updateUser(this.generalForm.value);
   }
 }
