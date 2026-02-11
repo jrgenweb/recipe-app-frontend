@@ -12,14 +12,14 @@
     <label for="name">Keresés</label>
   </div>
   <app-select
-    [items]="categorySelectItems"
+    [items]="categorySelectItems()"
     (changeSelectedEvt)="onCategoryChange($event)"
     [(ngModel)]="selectedCategory"
     [multiple]="false"
   ></app-select>
 
   <app-select
-    [items]="cuisinSelectItems"
+    [items]="cuisinSelectItems()"
     (changeSelectedEvt)="onCuisinChange($event)"
     [(ngModel)]="selectedCuisin"
     [multiple]="false"

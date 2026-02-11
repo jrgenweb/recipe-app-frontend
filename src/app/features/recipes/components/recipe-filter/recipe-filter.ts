@@ -1,10 +1,11 @@
-import { Component, EventEmitter, inject, OnInit, Output } from '@angular/core';
+import { Component, computed, EventEmitter, inject, OnInit, Output } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { ISelect, Select, TSelect } from '../select/select';
 
 import { CategoryStore } from '../../../categories/store/category.store';
 import { CuisineStore } from '../../../cuisines/stores/cuisine.store';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-recipe-filter',
@@ -18,12 +19,17 @@ export class RecipeFilter implements OnInit {
   @Output() changeSearchStringEvt = new EventEmitter<string>();
 
   searchString: string = '';
-  //categoryId: string = '';
-  categorySelectItems!: ISelect[];
-  cuisinSelectItems!: ISelect[];
+
   selectedCategory!: ISelect;
   selectedCuisin!: ISelect;
 
+  categorySelectItems = computed(() =>
+    this.categoryStore.categories().map((c) => ({ value: c.id, label: c.name })),
+  );
+
+  cuisinSelectItems = computed(() =>
+    this.cuisineStore.cuisines().map((c) => ({ value: c.id!, label: c.name })),
+  );
   public categoryStore: CategoryStore = inject(CategoryStore);
   public cuisineStore: CuisineStore = inject(CuisineStore);
 
@@ -32,20 +38,6 @@ export class RecipeFilter implements OnInit {
   ngOnInit(): void {
     this.categoryStore.loadAll();
     this.cuisineStore.loadAll();
-
-    this.categorySelectItems = this.categoryStore.categories().map((c) => {
-      return {
-        value: c.id,
-        label: c.name,
-      };
-    });
-
-    this.cuisinSelectItems = this.cuisineStore.cuisines().map((c) => {
-      return {
-        value: c.id!,
-        label: c.name,
-      };
-    });
   }
 
   onCategoryChange(selected: TSelect) {
