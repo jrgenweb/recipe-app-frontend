@@ -11,25 +11,21 @@
   ></app-recipe-filter>
 </div>
 
-<div class="row mt-5">
-  @for (recipe of recipeStore.myRecipes(); track recipe.id) {
-    <div class="col-6 col-md-4 col-lg-3 mb-3">
-      <app-my-recipe-card [recipe]="recipe"></app-my-recipe-card>
-      <!-- <app-recipe-card [recipe]="recipe" [isFavorite]="recipeStore.isFavorite(recipe.id)()">
-        
-      </app-recipe-card>
-       -->
-    </div>
-  }
-</div>
-@if (recipeStore.isLoading()) {
-  <div class="d-flex justify-content-center align-items-center">
-    <div class="spinner-border text-primary spinner-border-lg" role="status">
-      <span class="visually-hidden">Betöltés...</span>
-    </div>
+@let recipes = recipeStore.myRecipes();
+@let isLoading = recipeStore.isLoading();
+
+@if (!isLoading) {
+  <div class="row mt-5">
+    @for (recipe of recipes; track recipe.id) {
+      <div class="col-6 col-md-4 col-lg-3 mb-3">
+        <app-my-recipe-card [recipe]="recipe"></app-my-recipe-card>
+      </div>
+    } @empty {
+      <p class="text-center my-3">Nincs találat</p>
+    }
   </div>
-} @else if (!recipeStore.isLoading() && recipeStore.myRecipes().length === 0) {
-  <p class="text-center my-3">Nincs találat</p>
+} @else {
+  <app-spinner></app-spinner>
 }
 
 <app-confirm-modal

@@ -12,10 +12,11 @@ import { RecipeFilter } from '../../../features/recipes/components/recipe-filter
 
 import { RecipeStore } from '../../../features/recipes/stores/recipe.store';
 import { MyRecipeCard } from '../../../features/recipes/components/my-recipe-card/my-recipe-card';
+import { Spinner } from '../../../components/spinner/spinner';
 
 @Component({
   selector: 'app-recipes',
-  imports: [RouterLink, RecipeFilter, ConfirmModal, InfiniteScroll, MyRecipeCard],
+  imports: [RouterLink, RecipeFilter, ConfirmModal, InfiniteScroll, MyRecipeCard, Spinner],
   templateUrl: './recipes.html',
   styleUrl: './recipes.scss',
 })
