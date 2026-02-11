@@ -7,10 +7,11 @@ import { RecipeFilter } from '../../features/recipes/components/recipe-filter/re
 import { RecipeCard } from '../../features/recipes/components/recipe-card/recipe-card';
 import { SelectIngredient } from '../../features/recipes/components/select-ingredient/select-ingredient';
 import { RecipeStore } from '../../features/recipes/stores/recipe.store';
+import { Spinner } from '../../components/spinner/spinner';
 
 @Component({
   selector: 'app-recipes',
-  imports: [RecipeFilter, RecipeCard, InfiniteScroll, SelectIngredient],
+  imports: [RecipeFilter, RecipeCard, InfiniteScroll, SelectIngredient, Spinner],
   templateUrl: './recipes.html',
   styleUrl: './recipes.scss',
 })
