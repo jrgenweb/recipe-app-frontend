@@ -7,7 +7,7 @@ import {
   IRecipeDetail,
   IUpdateRecipeIngredient,
 } from '@recipe/shared';
-import { finalize, tap } from 'rxjs';
+import { debounceTime, filter, finalize, Subject, tap } from 'rxjs';
 import { AdminRecipeService } from '../services/admin-recipe.service';
 import { ToastService } from '../../../../../shared/services/toast-service';
 
@@ -36,9 +36,22 @@ export class AdminRecipeStore {
   readonly selectedRecipe = computed(() => this._selectedRecipe());
   readonly myRecipes = computed(() => this._myRecipes().data);
 
-  isFavorite = (recipeId: string) => computed(() => this._favoriteRecipeIds().includes(recipeId));
+  readonly filters = signal({
+    search: '',
+    categoryId: '',
+    cuisineId: '',
+    ingredientIds: [] as string[],
+  });
 
-  // --- Actions ---
+  private filterChange$ = new Subject<void>();
+  //isFavorite = (recipeId: string) => computed(() => this._favoriteRecipeIds().includes(recipeId));
+
+  constructor() {
+    this.filterChange$.pipe(debounceTime(300)).subscribe(() => {
+      const { search, categoryId, cuisineId, ingredientIds } = this.filters();
+      this.loadAll(search, categoryId, cuisineId, ingredientIds);
+    });
+  }
 
   /** Kezdeti betöltés vagy keresés */
   loadAll(search?: string, categoryId?: string, cuisinId?: string, ingredientIds?: string[]) {
@@ -51,12 +64,13 @@ export class AdminRecipeStore {
   }
 
   /** Végtelen görgetéshez (Infinite Scroll) */
-  loadNext(search?: string, categoryId?: string, cuisinId?: string, ingredientIds?: string[]) {
+  loadNext() {
     if (this._loading() || (this.total() > 0 && this.recipes().length >= this.total())) return;
     this._loading.set(true);
     const skip = this.recipes().length;
+    const { search, categoryId, cuisineId, ingredientIds } = this.filters();
     this.recipeService
-      .fetchRecipes(search, categoryId, cuisinId, ingredientIds, skip, 20, false)
+      .fetchRecipes(search, categoryId, cuisineId, ingredientIds, skip, 20, false)
       .pipe(finalize(() => this._loading.set(false)))
       .subscribe((resp) => {
         this._recipes.update((state) => ({
@@ -89,6 +103,18 @@ export class AdminRecipeStore {
         },
         error: (err: { message: string }) => this._error.set(err.message),
       });
+  }
+
+  updateFilters(
+    partial: Partial<{
+      search: string;
+      categoryId: string;
+      cuisineId: string;
+      ingredientIds: string[];
+    }>,
+  ) {
+    this.filters.update((f) => ({ ...f, ...partial }));
+    this.filterChange$.next();
   }
 
   create(recipe: ICreateRecipe) {

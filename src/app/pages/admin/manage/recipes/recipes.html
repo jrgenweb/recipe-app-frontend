@@ -38,7 +38,7 @@
   }
 </div>
 
-<!-- <app-infinite-scroll (scrollEvent)="onScroll($event)"></app-infinite-scroll> -->
+<app-infinite-scroll (loadMore)="loadMore(inf)" #inf></app-infinite-scroll>
 <app-confirm-modal
   [isOpen]="isShowDeleteConfirm()"
   [title]="'Törlés megerősítése'"
