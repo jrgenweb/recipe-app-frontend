@@ -28,30 +28,23 @@ export class Cuisines implements OnInit {
   constructor() {}
 
   ngOnInit(): void {
-    this.changeFilter();
-  }
-
-  private changeFilter() {
-    this.searchString();
-    this.store.reset();
-    this.store.loadAll(this.searchString());
+    this.store.loadAll();
   }
 
   loadMore(inf: InfiniteScroll) {
     this.scrollSignal.set(true);
     inf.done(); // reset loading flag
   }
-  /* 
-  loadNext() {
-    this.cuisinService.loadNext(this.searchString());
-  }
- */
-  changeSearchString(searchString: string) {
-    this.searchString.set(searchString);
-    this.changeFilter();
+
+  changeSearchString(search: string) {
+    this.store.updateFilters({ search });
   }
   openAddCuisinModal(cuisin?: ICuisin) {
-    if (cuisin) this.selectedCuisin = cuisin;
+    if (cuisin) {
+      this.selectedCuisin = cuisin;
+    } else {
+      this.selectedCuisin = undefined;
+    }
     this.isOpenAddCuisinModal = true;
   }
 

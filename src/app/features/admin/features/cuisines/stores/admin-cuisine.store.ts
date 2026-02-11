@@ -1,7 +1,7 @@
 import { inject, Injectable, signal, computed } from '@angular/core';
 
 import { IRecipeCategoryResponse, IRecipeCategory } from '@recipe/shared';
-import { finalize, tap } from 'rxjs';
+import { debounceTime, filter, finalize, Subject, tap } from 'rxjs';
 
 import { ToastService } from '../../../../../shared/services/toast-service';
 import { AdminCuisinService, ICuisin } from '../services/admin-cuisine-service';
@@ -24,7 +24,16 @@ export class AdminCuisineStore {
   readonly total = computed(() => this._cuisines().total);
   readonly isLoading = computed(() => this._loading());
 
-  // --- Actions ---
+  readonly filters = signal({ search: '' });
+
+  private filterChange$ = new Subject<void>();
+
+  constructor() {
+    this.filterChange$.pipe(debounceTime(300)).subscribe(() => {
+      const { search } = this.filters();
+      this.loadAll(search);
+    });
+  }
 
   /** Kezdeti betöltés vagy keresés */
   loadAll(search?: string) {
@@ -41,10 +50,13 @@ export class AdminCuisineStore {
   }
 
   /** Végtelen görgetéshez (Infinite Scroll) */
-  loadNext(search?: string) {
+  loadNext() {
     if (this._loading() || (this.total() > 0 && this.cuisines().length >= this.total())) return;
     this._loading.set(true);
+
     const skip = this.cuisines().length;
+
+    const { search } = this.filters();
     this.cuisineService
       .fetchCuisines(search, skip, 20)
       .pipe(finalize(() => this._loading.set(false)))
@@ -56,6 +68,10 @@ export class AdminCuisineStore {
       });
   }
 
+  updateFilters(partial: Partial<{ search: string }>) {
+    this.filters.update((f) => ({ ...f, ...partial }));
+    this.filterChange$.next();
+  }
   create(cuisineName: string) {
     this._loading.set(true);
     this.cuisineService.create(cuisineName).subscribe({
