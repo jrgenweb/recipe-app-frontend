@@ -7,7 +7,6 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { AsyncPipe } from '@angular/common';
 import { InfiniteScroll } from '../../../../../components/infinite-scroll/infinite-scroll';
-import { IngredientService } from '../../../../../features/admin/features/ingredients/services/ingredient-service';
 
 import { RecipeService } from '../../../../../features/recipes/services/recipe-service';
 
@@ -15,6 +14,7 @@ import { asyncImageValidator } from '../../../../../shared/validators/async-imag
 import { AdminCategoryStore } from '../../../../../features/admin/features/categories/stores/admin-category.store';
 
 import { AdminCuisineStore } from '../../../../../features/admin/features/cuisines/stores/admin-cuisine.store';
+import { IngredientStore } from '../../../../../features/ingredients/stores/ingredient.store';
 
 @Component({
   selector: 'app-add-recipe',
@@ -29,17 +29,16 @@ export class AddRecipe implements OnInit {
   recipe?: IRecipeDetail;
   isEditMode = false;
 
-  public ingredientService: IngredientService = inject(IngredientService);
-
   public categoryStore = inject(AdminCategoryStore);
   public recipeService: RecipeService = inject(RecipeService);
   public cuisinStore = inject(AdminCuisineStore);
+  public ingredientStore = inject(IngredientStore);
   private route: ActivatedRoute = inject(ActivatedRoute);
 
   constructor() {
     this.categoryStore.loadAll();
     this.cuisinStore.loadAll();
-    this.ingredientService.loadNext();
+    this.ingredientStore.loadAll();
   }
 
   ngOnInit(): void {
@@ -57,8 +56,8 @@ export class AddRecipe implements OnInit {
     }
   }
   loadMore(inf: InfiniteScroll) {
-    this.ingredientService.loadNext();
-    if (!this.ingredientService.isLoading) inf.done();
+    //this.ingredientService.loadNext();
+    //if (!this.ingredientService.isLoading) inf.done();
   }
   buildForm() {
     this.recipeForm = new FormGroup({
@@ -136,7 +135,7 @@ export class AddRecipe implements OnInit {
 
   addIngredient() {
     const ingredientId = this.recipeForm.get('selectedIngredientId')?.value;
-    const ingredient = this.ingredientService.ingredients$.value.find((i) => i.id === ingredientId);
+    const ingredient = this.ingredientStore.ingredients().find((i) => i.id === ingredientId);
     const ingredientName = ingredient?.name;
     const ingredientUnit = ingredient?.unit;
 

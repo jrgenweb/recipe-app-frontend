@@ -1,6 +1,5 @@
-import { Component, computed, effect, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 
-import { toSignal } from '@angular/core/rxjs-interop';
 import { InfiniteScroll } from '../../../../components/infinite-scroll/infinite-scroll';
 import { ConfirmModal } from '../../../../components/confirm-modal/confirm-modal';
 import { Spinner } from '../../../../components/spinner/spinner';
@@ -29,13 +28,13 @@ export class Cuisines implements OnInit {
   constructor() {}
 
   ngOnInit(): void {
-    this.store.loadAll();
+    this.changeFilter();
   }
 
   private changeFilter() {
     this.searchString();
     this.store.reset();
-    this.store.loadAll();
+    this.store.loadAll(this.searchString());
   }
 
   loadMore(inf: InfiniteScroll) {
@@ -49,6 +48,7 @@ export class Cuisines implements OnInit {
  */
   changeSearchString(searchString: string) {
     this.searchString.set(searchString);
+    this.changeFilter();
   }
   openAddCuisinModal(cuisin?: ICuisin) {
     if (cuisin) this.selectedCuisin = cuisin;

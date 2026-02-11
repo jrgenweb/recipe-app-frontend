@@ -28,7 +28,7 @@ export class AdminCategoryStore {
   /** Kezdeti betöltés vagy keresés */
   loadAll(search?: string) {
     this._loading.set(true);
-    this.categoryService.getAll().subscribe({
+    this.categoryService.fetchCategories(search).subscribe({
       next: (resp) => {
         this._categories.set(resp);
       },

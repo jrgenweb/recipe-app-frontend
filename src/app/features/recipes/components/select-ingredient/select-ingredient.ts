@@ -12,8 +12,9 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 
 import { IRecipeIngredient } from '@recipe/shared';
-import { IngredientService } from '../../../admin/features/ingredients/services/ingredient-service';
+
 import { InfiniteScroll } from '../../../../components/infinite-scroll/infinite-scroll';
+import { IngredientStore } from '../../../ingredients/stores/ingredient.store';
 
 @Component({
   selector: 'app-select-ingredient',
@@ -23,23 +24,27 @@ import { InfiniteScroll } from '../../../../components/infinite-scroll/infinite-
 export class SelectIngredient {
   @ViewChild('selectIngredientEl') selectIngredientEl!: ElementRef;
   @Output() ingredientChanged = new EventEmitter<IRecipeIngredient[]>();
-  private ingredientService = inject(IngredientService);
+
+  private ingredientStore = inject(IngredientStore);
+
   // 🔥 HTTP → signal (auto unsubscribe)
-  ingredients = toSignal(this.ingredientService.ingredients$, { initialValue: [] });
+  //ingredients = toSignal(this.ingredientService.ingredients$, { initialValue: [] });
 
   selectedIngredients = signal<IRecipeIngredient[]>([]);
   searchString = signal('');
   isShow = signal(false);
 
   constructor() {
-    this.ingredientService.getAll();
+    this.ingredientStore.loadAll();
+    //this.ingredientService.getAll();
   }
 
   viewModel = computed(() => {
     const search = this.searchString().toLowerCase();
     const selectedIds = new Set(this.selectedIngredients().map((s) => s.id));
 
-    const ingredients = this.ingredients()
+    const ingredients = this.ingredientStore
+      .ingredients()
       .filter((i) => i.name.toLowerCase().includes(search) && !selectedIds.has(i.id))
       .slice(0, 8);
 
@@ -51,10 +56,10 @@ export class SelectIngredient {
       isOpen: this.isShow() && ingredients.length > 0,
     };
   });
-
+  /* 
   loadMore(_inf: InfiniteScroll) {
     this.ingredientService.loadNext();
-  }
+  } */
   onAdd(ingredient: IRecipeIngredient) {
     this.selectedIngredients.update((list) => [...list, ingredient]);
     this.searchString.set('');

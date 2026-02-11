@@ -15,13 +15,13 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { IRecipeDetail, IRecipeIngredient } from '@recipe/shared';
 
 import { asyncImageValidator } from '../../../../shared/validators/async-image-validator';
-import { IngredientService } from '../../../../features/admin/features/ingredients/services/ingredient-service';
 
 import { RecipeService } from '../../../../features/recipes/services/recipe-service';
 
 import { RecipeStore } from '../../../../features/recipes/stores/recipe.store';
 import { CategoryStore } from '../../../../features/categories/store/category.store';
 import { CuisineStore } from '../../../../features/cuisines/stores/cuisine.store';
+import { IngredientStore } from '../../../../features/ingredients/stores/ingredient.store';
 
 @Component({
   selector: 'app-add',
@@ -36,9 +36,10 @@ export class AddRecipe implements OnInit {
   recipe?: IRecipeDetail;
   isEditMode = false;
 
-  public ingredientService: IngredientService = inject(IngredientService);
   public categoryStore: CategoryStore = inject(CategoryStore);
   public recipeStore: RecipeStore = inject(RecipeStore);
+
+  public ingredientStore = inject(IngredientStore);
 
   public recipeService: RecipeService = inject(RecipeService);
 
@@ -46,7 +47,7 @@ export class AddRecipe implements OnInit {
   private route: ActivatedRoute = inject(ActivatedRoute);
 
   constructor() {
-    this.ingredientService.loadNext();
+    this.ingredientStore.loadAll();
     this.categoryStore.loadAll();
     this.cuisinStore.loadAll();
   }
@@ -141,7 +142,7 @@ export class AddRecipe implements OnInit {
 
   addIngredient() {
     const ingredientId = this.recipeForm.get('selectedIngredientId')?.value;
-    const ingredient = this.ingredientService.ingredients$.value.find((i) => i.id === ingredientId);
+    const ingredient = this.ingredientStore.ingredients().find((i) => i.id === ingredientId);
     const ingredientName = ingredient?.name;
     const ingredientUnit = ingredient?.unit;
 

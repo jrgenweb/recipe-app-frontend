@@ -15,7 +15,8 @@ import {
   IRecipeIngredient,
   IUpdateRecipeIngredient,
 } from '@recipe/shared';
-import { IngredientService } from '../../services/ingredient-service';
+
+import { AdminIngredientStore } from '../../stores/admin-ingredient.store';
 
 @Component({
   selector: 'app-add-ingredient-modal',
@@ -29,7 +30,7 @@ export class AddIngredientModal implements OnChanges {
   @Output() confirmEvt = new EventEmitter<boolean>();
   ingredientForm!: FormGroup;
 
-  private ingredientService: IngredientService = inject(IngredientService);
+  public ingredientStore = inject(AdminIngredientStore);
   constructor() {}
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isOpen'] && this.isOpen) {
@@ -60,11 +61,11 @@ export class AddIngredientModal implements OnChanges {
           unit,
         };
 
-        this.ingredientService.update(updatedIngredient, this.ingredient.id).subscribe(() => {});
+        this.ingredientStore.update(this.ingredient.id, updatedIngredient);
       } else {
         //add
         const newIngredient: ICreateRecipeIngredient = { name, unit };
-        this.ingredientService.create(newIngredient);
+        this.ingredientStore.create(newIngredient);
       }
     }
     this.ingredient = undefined;

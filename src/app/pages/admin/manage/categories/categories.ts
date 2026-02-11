@@ -4,7 +4,6 @@ import { AsyncPipe } from '@angular/common';
 
 import { IRecipeCategory } from '@recipe/shared';
 
-import { toSignal } from '@angular/core/rxjs-interop';
 import { ConfirmModal } from '../../../../components/confirm-modal/confirm-modal';
 import { AddCategoryModal } from '../../../../features/admin/features/categories/components/add-category-modal/add-category-modal';
 import { InfiniteScroll } from '../../../../components/infinite-scroll/infinite-scroll';
@@ -14,7 +13,7 @@ import { AdminCategoryStore } from '../../../../features/admin/features/categori
 
 @Component({
   selector: 'app-categories',
-  imports: [AsyncPipe, ConfirmModal, AddCategoryModal, InfiniteScroll, Spinner],
+  imports: [ConfirmModal, AddCategoryModal, InfiniteScroll, Spinner],
   templateUrl: './categories.html',
   styleUrl: './categories.scss',
 })
@@ -33,11 +32,11 @@ export class Categories {
   private changeFilter() {
     this.searchString();
     this.store.reset();
-    this.store.loadAll();
+    this.store.loadAll(this.searchString());
   }
 
   constructor() {
-    this.store.loadAll();
+    this.changeFilter();
   }
   /* 
   loadMore(inf: InfiniteScroll) {
@@ -52,6 +51,7 @@ export class Categories {
   } */
   changeSearchString(searchString: string) {
     this.searchString.set(searchString);
+    this.changeFilter();
   }
   showDeleteConfirm(category: IRecipeCategory) {
     this.selectedCategory = category;

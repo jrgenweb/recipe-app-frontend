@@ -156,7 +156,7 @@
         >
           <option disabled>Kiválasztás</option>
 
-          @for (ingredient of ingredientService.ingredients$ | async; track $index) {
+          @for (ingredient of ingredientStore.ingredients(); track $index) {
             <option [value]="ingredient.id" (click)="selectIngredient(ingredient)">
               {{ ingredient.name }} ({{ ingredient.unit }})
             </option>
