@@ -1,1 +1,58 @@
-<p>admin-recipe-card works!</p>
+<div
+  class="recipe-card card h-100 overflow-hidden shadow-sm border-0"
+  [class.recipe-card--mobile]="isSmallScreen"
+>
+  <!-- Image Container -->
+  <div class="recipe-card__image-container">
+    <img
+      class="card-img-top w-100 h-100 object-fit-cover"
+      [src]="recipe.recipeImages[0]?.url || 'https://placehold.co/600x400'"
+      [alt]="recipe.name"
+      [title]="recipe.name"
+      (error)="onImageError($event)"
+    />
+
+    @if (!isSmallScreen) {
+      <div class="recipe-card__overlay"></div>
+    }
+
+    <!-- Buttons Overlay -->
+
+    <div class="recipe-card__buttons-container z-2">
+      <!-- View Button -->
+      <a
+        routerLink="/recipes/{{ recipe.id }}"
+        class="recipe-card__btn-view btn btn-sm btn-light"
+        title="Megtekintés"
+      >
+        <i class="bi bi-eye"></i>
+      </a>
+    </div>
+  </div>
+
+  <!-- Card Body -->
+  <div class="card-body d-flex flex-column">
+    <h5 class="card-title text-truncate mb-2">{{ recipe.name | shortenPipe: 25 }}</h5>
+    @if (recipe.description) {
+      <p class="card-text text-muted small mb-0 flex-grow-1">
+        {{ recipe.description | shortenPipe: 60 }}
+      </p>
+    }
+    <div class="d-flex justify-content-between mt-2">
+      <span class="card-text text-muted small mb-0 flex-grow-1">
+        Kommentek: {{ recipe._count.comments }}
+      </span>
+      <span class="card-text text-muted small mb-0 flex-grow-1">
+        Értékelés:<b>{{ recipe.avgRating }}</b> ({{ recipe._count.ratings }})
+      </span>
+    </div>
+    <div class="fs-4 mt-3 d-flex gap-2 justify-content-between">
+      <a [routerLink]="['/dashboard/manage/recipes/edit', recipe.id]">
+        <i class="bi bi-pencil text-success"></i
+      ></a>
+      <a href="#" (click)="onDelete(recipe.id); $event.preventDefault()"
+        ><i class="bi bi-trash text-danger"></i
+      ></a>
+    </div>
+  </div>
+</div>

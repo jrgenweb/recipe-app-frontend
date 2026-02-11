@@ -13,17 +13,18 @@ import { FavoriteService } from '../../../../features/recipes/services/favorite-
 import { AuthService } from '../../../../shared/services/auth-service';
 import { AdminRecipeStore } from '../../../../features/admin/features/recipes/stores/admin-recipe.store';
 import { AdminRecipeFilter } from '../../../../features/admin/features/recipes/components/admin-recipe-filter/admin-recipe-filter';
+import { AdminRecipeCard } from '../../../../features/admin/features/recipes/components/admin-recipe-card/admin-recipe-card';
 
 @Component({
   selector: 'app-recipes',
   imports: [
-    RecipeFilter,
     RouterLink,
     RouterLinkActive,
-    RecipeCard,
+
     InfiniteScroll,
     ConfirmModal,
     AdminRecipeFilter,
+    AdminRecipeCard,
   ],
   templateUrl: './recipes.html',
   styleUrl: './recipes.scss',
@@ -33,21 +34,16 @@ export class Recipes implements OnInit {
   categoryId = signal('');
   cuisinId = signal('');
   searchString = signal('');
-
-  //Services
-
-  private favoriteService = inject(FavoriteService);
-
-  public recipeStore = inject(AdminRecipeStore);
-
   ingredientIds = signal<string[]>([]);
 
-  // Scroll signal – jelez, ha többet kell betölteni
+  // Stores
+  public recipeStore = inject(AdminRecipeStore);
 
+  // Delete modal
   isShowDeleteConfirm = signal(false);
   selectedRecipe = signal<IRecipeList | null>(null);
 
-  // 🔥 Effect a filter változásokra
+  // Effect a filter változásokra
   private changeFilter() {
     this.categoryId();
     this.cuisinId();
@@ -56,17 +52,13 @@ export class Recipes implements OnInit {
     this.recipeStore.reset();
     this.recipeStore.loadAll();
   }
-  // 🔥 Effect a scroll signal-re
 
   constructor() {}
 
   ngOnInit(): void {
-    // Alapadatok
     this.changeFilter();
-    this.favoriteService.getAll();
   }
 
-  // Setterek – ez triggereli az effect-et
   changeCategory(categoryId: string) {
     this.categoryId.set(categoryId);
     this.changeFilter();
@@ -96,7 +88,7 @@ export class Recipes implements OnInit {
   }
   onConfirmDelete(confirm: boolean) {
     if (confirm && this.selectedRecipe()) {
-      //this.deleteRecipe(this.selectedRecipe()!.id);
+      this.recipeStore.removeRecipe(this.selectedRecipe()!.id);
     }
     this.isShowDeleteConfirm.set(false);
   }
