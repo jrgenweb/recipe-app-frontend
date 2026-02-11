@@ -59,15 +59,47 @@
             >Felhasználók</a
           >
         </li>
+      </ul>
 
-        <li class="nav-item">
-          <a
-            class="nav-link active bg-warning text-dark rounded-2"
-            aria-current="page"
-            routerLink="/"
-            >Receptes</a
-          >
-        </li>
+      <div class="flex-grow-1">
+        <button class="btn-warning btn" routerLink="/">Receptes</button>
+      </div>
+      <ul class="navbar-nav mt-2 mt-lg-0 ms-auto">
+        @if (auth.currentUser()) {
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="dropdownId"
+              data-bs-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              <app-profile-picture
+                [src]="auth.currentUser()?.picture || ''"
+                [title]="auth.currentUser()!.name"
+                size="md"
+              ></app-profile-picture>
+
+              {{ auth.currentUser()?.name }}</a
+            >
+            <div class="dropdown-menu" aria-labelledby="dropdownId">
+              <a class="dropdown-item" routerLink="/dashboard/profile"> Profilom</a>
+              <a class="dropdown-item" href="#" (click)="onLogout($event)">Kijelentkezés</a>
+            </div>
+          </li>
+        } @else {
+          <li class="nav-item">
+            <a class="nav-link active" routerLink="/signin" aria-current="page"
+              >Belépés <span class="visually-hidden">(current)</span></a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" routerLink="/signup" aria-current="page"
+              >Regisztráció <span class="visually-hidden">(current)</span></a
+            >
+          </li>
+        }
       </ul>
       <!--
       <form class="d-flex my-2 my-lg-0">
