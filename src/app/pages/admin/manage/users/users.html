@@ -32,7 +32,11 @@
   </div>
 </div>
 
-@if (!vm().loading && vm().hasResults) {
+@let isLoading = userStore.isLoading();
+@let users = userStore.users();
+@let empty = users.length === 0;
+
+@if (!isLoading && !empty) {
   <div class="table-responsive">
     <table class="table table-striped table-hover">
       <thead>
@@ -49,7 +53,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (user of vm().users; track user.id) {
+        @for (user of users; track user.id) {
           <tr>
             <td><app-profile-picture size="md" [src]="user.picture"></app-profile-picture></td>
             <td>
@@ -86,7 +90,7 @@
       </tbody>
     </table>
   </div>
-} @else if (vm().loading) {
+} @else if (isLoading) {
   <app-spinner></app-spinner>
 }
 

@@ -1,52 +1,66 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { IAdminCreateUser, IUser } from '@recipe/shared';
 
-import { Router, ActivatedRoute } from '@angular/router';
-import { UserService } from '../../../../../features/admin/features/users/services/user-service';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+
 import { asyncImageValidator } from '../../../../../shared/validators/async-image-validator';
 import { MatchValidator } from '../../../../../shared/validators/match-validator';
+import { AdminUserStore } from '../../../../../features/admin/features/users/stores/user.store';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { filter, take } from 'rxjs';
 
 @Component({
   selector: 'app-add-user',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './add-user.html',
   styleUrl: './add-user.scss',
 })
-export class AddUser implements OnInit {
+export class AddUser {
   addUserForm!: FormGroup;
   serverError: string = '';
   isEditMode = signal(false);
   editingUserId: string = '';
-  //user!: IUser;
 
-  private userService = inject(UserService);
+  public userStore = inject(AdminUserStore);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
   user = signal<IUser | undefined>(undefined);
 
-  constructor() {}
+  constructor() {
+    effect(() => {
+      const user = this.userStore.selectedUser();
+      if (user) {
+        this.user.set(user);
+        this.initializeForm(true);
+      }
+    });
+    toObservable(this.userStore.selectedUser)
+      .pipe(
+        filter((user): user is IUser => !!user),
+        take(1), // automatikus unsubscribe!
+      )
+      .subscribe((user) => {
+        this.user.set(user);
+        console.log(user);
+        this.initializeForm(true);
+      });
+  }
   ngOnInit(): void {
+    this.initializeForm();
     this.route.params.subscribe((params) => {
       if (params['id']) {
         this.isEditMode.set(true);
         this.editingUserId = params['id'];
         this.loadUserData(params['id']);
-      } else {
-        this.initializeForm();
       }
     });
   }
 
   private loadUserData(userId: string) {
-    // Assuming userService has a method to fetch single user
-    // For now, we'll initialize form with empty password fields for edit mode
-    this.userService.getById(userId).subscribe((user) => {
-      this.user.set(user);
-      this.initializeForm(true);
-    });
+    this.userStore.getById(userId);
   }
 
   private initializeForm(isEdit = false) {
@@ -84,14 +98,7 @@ export class AddUser implements OnInit {
         if (formValue.password) {
           updateData.password = formValue.password;
         }
-        this.userService.update(this.editingUserId, updateData).subscribe({
-          next: () => {
-            this.router.navigate(['/dashboard/manage/users']);
-          },
-          error: () => {
-            this.serverError = 'Hiba a frissítés során!';
-          },
-        });
+        this.userStore.update(this.editingUserId, updateData);
       } else {
         // Create mode
         const newUser: IAdminCreateUser = {
@@ -101,7 +108,7 @@ export class AddUser implements OnInit {
           picture: formValue.picture,
           role: formValue.role,
         };
-        this.userService.create(newUser);
+        this.userStore.create(newUser);
         this.router.navigate(['/dashboard/manage/users']);
       }
     }

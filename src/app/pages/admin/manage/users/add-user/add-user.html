@@ -1,7 +1,6 @@
 <div class="add-user-form mt-5 col-md-8 offset-md-2">
   <h2>{{ isEditMode() ? 'Felhasználó szerkesztése' : 'Felhasználó hozzáadása' }}</h2>
 
-  {{ user()?.email }}
   @let email = addUserForm.get('email');
   @let picture = addUserForm.get('picture');
   @let name = addUserForm.get('name');
@@ -146,7 +145,7 @@
       <button type="submit" class="btn btn-primary" [disabled]="addUserForm.invalid">
         {{ isEditMode() ? 'Mentés' : 'Hozzáadás' }}
       </button>
-      <a href="/dashboard/manage/users" class="btn btn-secondary"> Mégse </a>
+      <a routerLink="/dashboard/manage/users" class="btn btn-secondary"> Mégse </a>
     </div>
   </form>
 </div>
