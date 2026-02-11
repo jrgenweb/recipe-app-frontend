@@ -21,7 +21,7 @@ export class Recipes implements OnInit {
   public recipeStore = inject(AdminRecipeStore);
 
   // Delete modal
-  isShowDeleteConfirm = signal(false);
+  isShowDeleteConfirm = false;
   selectedRecipe = signal<IRecipeList | null>(null);
 
   constructor() {}
@@ -53,15 +53,16 @@ export class Recipes implements OnInit {
   }
 
   showDeleteConfirm(recipe: IRecipeList) {
+    console.log('sad');
     this.selectedRecipe.set(recipe);
     if (this.selectedRecipe()) {
-      this.isShowDeleteConfirm.set(true);
+      this.isShowDeleteConfirm = true;
     }
   }
   onConfirmDelete(confirm: boolean) {
     if (confirm && this.selectedRecipe()) {
       this.recipeStore.removeRecipe(this.selectedRecipe()!.id);
     }
-    this.isShowDeleteConfirm.set(false);
+    this.isShowDeleteConfirm = false;
   }
 }

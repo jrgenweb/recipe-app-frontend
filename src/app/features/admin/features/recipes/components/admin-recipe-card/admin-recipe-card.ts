@@ -14,7 +14,8 @@ import { ShortenPipe } from '../../../../../../shared/pipes/shorten-pipe';
 })
 export class AdminRecipeCard {
   @Input() recipe!: IRecipeList;
-  @Output() confirmDeleteEvent = new EventEmitter<string>();
+  @Input() editUrl: string = '';
+  @Output() confirmDeleteEvent = new EventEmitter<IRecipeList>();
 
   isSmallScreen = window.innerWidth < 576;
   isShowRatingModal = false;
@@ -30,6 +31,6 @@ export class AdminRecipeCard {
   }
 
   onDelete(recipeId: string) {
-    this.confirmDeleteEvent.emit(recipeId);
+    this.confirmDeleteEvent.emit(this.recipe);
   }
 }

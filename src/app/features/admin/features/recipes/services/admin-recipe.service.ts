@@ -78,7 +78,7 @@ export class AdminRecipeService {
 
   //
   delete(recipeId: string) {
-    return this.http.delete<{ deleted: boolean }>(API_URL + '/recipes/' + recipeId);
+    return this.http.delete<{ deleted: boolean }>(API_URL + '/recipes/admin/' + recipeId);
   }
   update(recipeId: string, recipe: IUpdateRecipe) {
     return this.http.patch(API_URL + '/recipes/' + recipeId, { ...recipe });
