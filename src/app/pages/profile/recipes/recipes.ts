@@ -1,8 +1,7 @@
-import { Component, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { Observable } from 'rxjs';
-import { IRecipeList, IRecipeListResponse } from '@recipe/shared';
+import { IRecipeList } from '@recipe/shared';
 
 import { AuthService } from '../../../shared/services/auth-service';
 
@@ -10,7 +9,6 @@ import { ConfirmModal } from '../../../components/confirm-modal/confirm-modal';
 
 import { InfiniteScroll } from '../../../components/infinite-scroll/infinite-scroll';
 import { RecipeFilter } from '../../../features/recipes/components/recipe-filter/recipe-filter';
-import { RecipeCard } from '../../../features/recipes/components/recipe-card/recipe-card';
 
 import { RecipeStore } from '../../../features/recipes/stores/recipe.store';
 import { MyRecipeCard } from '../../../features/recipes/components/my-recipe-card/my-recipe-card';

@@ -23,7 +23,6 @@ export class Recipes implements OnInit {
 
   ngOnInit(): void {
     this.recipeStore.loadAll();
-    console.log(this.recipeStore.recipes(), 'StoreBol');
   }
 
   loadMore(inf: InfiniteScroll) {

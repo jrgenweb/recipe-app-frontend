@@ -10,12 +10,14 @@ import { debounceTime, finalize, Subject, tap } from 'rxjs';
 import { FavoriteService } from '../services/favorite-service';
 import { ToastService } from '../../../shared/services/toast-service';
 import { IUpdateRecipe } from '../../../shared/interfaces/update-recipe.interface';
+import { AuthService } from '../../../shared/services/auth-service';
 
 @Injectable({ providedIn: 'root' })
 export class RecipeStore {
   private recipeService = inject(RecipeService);
   private favoriteService = inject(FavoriteService);
   private toastService = inject(ToastService);
+  private auth = inject(AuthService);
 
   // --- State ---
   private _recipes = signal<IRecipeListResponse>({ data: [], total: 0 });
@@ -72,7 +74,9 @@ export class RecipeStore {
       error: (err) => this._error.set(err.message),
       complete: () => this._loading.set(false),
     });
-    this.loadFavorites();
+    if (this.auth.isLoggedIn()) {
+      this.loadFavorites();
+    }
   }
 
   /** Végtelen görgetéshez (Infinite Scroll) */
