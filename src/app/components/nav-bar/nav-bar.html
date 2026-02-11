@@ -20,19 +20,12 @@
             >Receptek <span class="visually-hidden">(current)</span></a
           >
         </li>
-
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/dashboard" routerLinkActive="active" aria-current="page"
-            >Dashboard <span class="visually-hidden">(current)</span></a
-          >
-        </li>
       </ul>
-      <!--
-      <form class="d-flex my-2 my-lg-0">
-        <input class="form-control me-sm-2" type="text" placeholder="Keresés" />
-        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Keresés</button>
-      </form>
-      -->
+      @if (auth.currentUser()?.role === 'ADMIN') {
+        <div class="flex-grow-1">
+          <button class="btn btn-danger" routerLink="/dashboard">Dashboard</button>
+        </div>
+      }
 
       <ul class="navbar-nav mt-2 mt-lg-0 ms-auto">
         @if (auth.currentUser()) {
