@@ -39,7 +39,7 @@
               aria-expanded="false"
             >
               <app-profile-picture
-                [src]="auth.currentUser()?.picture || ''"
+                [src]="auth.currentUser()?.picture"
                 [title]="auth.currentUser()!.name"
                 size="md"
               ></app-profile-picture>
