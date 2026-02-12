@@ -1,7 +1,7 @@
 import { inject, Injectable, signal, computed } from '@angular/core';
 
 import { IRecipeIngredient } from '@recipe/shared';
-import { finalize, tap } from 'rxjs';
+import { debounceTime, Subject } from 'rxjs';
 import { IngredientService } from '../services/ingredient.service';
 import { ToastService } from '../../../shared/services/toast-service';
 
@@ -25,13 +25,22 @@ export class IngredientStore {
   readonly ingredients = computed(() => this._ingredients().data);
   readonly total = computed(() => this._ingredients().total);
   readonly isLoading = computed(() => this._loading());
+  readonly filters = signal({ name: '' });
 
+  private filterChange$ = new Subject<void>();
+
+  constructor() {
+    this.filterChange$.pipe(debounceTime(300)).subscribe(() => {
+      const { name } = this.filters();
+      this.loadAll(name);
+    });
+  }
   // --- Actions ---
 
   /** Kezdeti betöltés vagy keresés */
   loadAll(search?: string) {
     this._loading.set(true);
-    this.ingredientService.fetchIngredients(search).subscribe({
+    this.ingredientService.fetchIngredients(search, 0, 8).subscribe({
       next: (resp) => {
         this._ingredients.set(resp);
       },
@@ -42,20 +51,9 @@ export class IngredientStore {
     });
   }
 
-  /** Végtelen görgetéshez (Infinite Scroll) */
-  loadNext(search?: string) {
-    if (this._loading() || (this.total() > 0 && this.ingredients().length >= this.total())) return;
-    this._loading.set(true);
-    const skip = this.ingredients().length;
-    this.ingredientService
-      .fetchIngredients(search, skip, 20)
-      .pipe(finalize(() => this._loading.set(false)))
-      .subscribe((resp) => {
-        this._ingredients.update((state) => ({
-          data: [...state.data, ...resp.data],
-          total: resp.total,
-        }));
-      });
+  updateFilter(name: string) {
+    this.filters.update((state) => ({ ...state, name }));
+    this.filterChange$.next();
   }
 
   reset() {

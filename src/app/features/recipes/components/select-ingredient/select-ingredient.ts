@@ -8,6 +8,7 @@ import {
   signal,
   computed,
   inject,
+  effect,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 
@@ -34,24 +35,25 @@ export class SelectIngredient {
   searchString = signal('');
   isShow = signal(false);
 
+  //searchLower = computed(() => this.searchString().toLocaleLowerCase());
+
   constructor() {
     this.ingredientStore.loadAll();
-    //this.ingredientService.getAll();
+    effect(() => {
+      //const search = this.searchLower();
+      const search = this.searchString();
+      this.ingredientStore.updateFilter(search);
+    });
   }
 
   viewModel = computed(() => {
-    const search = this.searchString().toLowerCase();
     const selectedIds = new Set(this.selectedIngredients().map((s) => s.id));
-
-    const ingredients = this.ingredientStore
-      .ingredients()
-      .filter((i) => i.name.toLowerCase().includes(search) && !selectedIds.has(i.id))
-      .slice(0, 8);
+    const ingredients = this.ingredientStore.ingredients();
 
     return {
       ingredients,
       hasResults: ingredients.length > 0,
-      hasSearch: search.length > 0,
+      hasSearch: this.searchString().length > 0,
       hasSelected: selectedIds.size > 0,
       isOpen: this.isShow() && ingredients.length > 0,
     };
