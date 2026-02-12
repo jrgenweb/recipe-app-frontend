@@ -1,4 +1,4 @@
-export function onImageError(event: Event) {
+export function onImageError(event: Event, imgPath?: string) {
   const img = event.target as HTMLImageElement;
-  img.src = 'https://placehold.co/600x400';
+  img.src = imgPath || '/no-recipe.avif';
 }

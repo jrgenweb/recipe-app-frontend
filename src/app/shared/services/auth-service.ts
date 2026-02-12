@@ -22,14 +22,12 @@ type ChangePasswordResponse = ChangePasswordSuccess | ChangePasswordError;
 })
 export class AuthService {
   private tokenKey = 'access_token';
-
-  public currentUser = signal<IUser | null>(null);
-  public isInitialized = signal<boolean>(false); // Ez lesz a kulcs!
-  //public isLoggedin$ = new BehaviorSubject<boolean>(false);
-
   private http: HttpClient = inject(HttpClient);
   private router: Router = inject(Router);
   private toastService = inject(ToastService);
+
+  public currentUser = signal<IUser | null>(null);
+  public isInitialized = signal<boolean>(false); // Ez lesz a kulcs!
 
   public isAuthenticated = computed(() => !!this.currentUser());
 
@@ -60,20 +58,28 @@ export class AuthService {
       },
     });
   }
-  private redirectAfterLogin() {
-    const role = this.currentUser()?.role;
-    const target = role === 'ADMIN' ? '/dashboard' : '/recipes';
-    this.router.navigate([target]);
-  }
 
   login(email: string, password: string): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${API_URL}/auth/login`, { email, password }).pipe(
       tap((res) => {
         localStorage.setItem(this.tokenKey, res.access_token);
         this.currentUser.set(res.user);
+        this.isInitialized.set(true);
         this.redirectAfterLogin();
       }),
     );
+  }
+  // Kijelentkezés
+  logout() {
+    localStorage.removeItem(this.tokenKey);
+    this.currentUser.set(null);
+    this.router.navigate(['/signin']);
+    this.isInitialized.set(true);
+  }
+  private redirectAfterLogin() {
+    const role = this.currentUser()?.role;
+    const target = role === 'ADMIN' ? '/dashboard' : '/recipes';
+    this.router.navigate([target]);
   }
 
   checkEmail(email: string) {
@@ -87,14 +93,6 @@ export class AuthService {
     return this.http.post<{ user: IUser; access_token: string }>(API_URL + '/auth/register', user);
   }
 
-  // Kijelentkezés
-  logout() {
-    localStorage.removeItem(this.tokenKey);
-    //this.isLoggedin$.next(false);
-    this.currentUser.set(null); // törli a felhasználót
-    this.router.navigate(['/']);
-  }
-
   // Lekéri az access token-t
   getToken(): string | null {
     return localStorage.getItem(this.tokenKey);
@@ -105,6 +103,7 @@ export class AuthService {
     return !!this.getToken();
   }
 
+  //jelszó változtatás
   changePassword(oldPassword: string, newPassword: string): Observable<ChangePasswordResponse> {
     const token = this.getToken();
     if (!token) return of({ message: 'Nincs érvényes token', updated: false }); // nincs token, nem hívjuk

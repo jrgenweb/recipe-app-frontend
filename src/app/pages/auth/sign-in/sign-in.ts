@@ -1,8 +1,9 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../shared/services/auth-service';
 import { Router } from '@angular/router';
 import { ToastService } from '../../../shared/services/toast-service';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-sign-in',
@@ -16,9 +17,14 @@ export class SignIn implements OnInit {
 
   private auth = inject(AuthService);
   private router = inject(Router);
-  private toastService = inject(ToastService);
 
-  constructor() {}
+  constructor() {
+    effect(() => {
+      if (this.auth.isAuthenticated()) {
+        this.router.navigate(['/recipes']);
+      }
+    });
+  }
   ngOnInit(): void {
     this.loginForm = new FormGroup({
       email: new FormControl('', Validators.required),
@@ -32,12 +38,10 @@ export class SignIn implements OnInit {
       this.auth.login(email, password).subscribe({
         next: () => {
           this.router.navigate(['/recipes']);
-          //this.toastService.add({ message: 'Hibás email vagy jelszó', type: 'danger' });
           this.invalidLogin.set(false);
         },
         error: () => {
           this.invalidLogin.set(true);
-          //this.toastService.add({ message: 'Hibás email vagy jelszó', type: 'danger' });
         },
       });
     }

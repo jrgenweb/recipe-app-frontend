@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, effect, inject, OnInit } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { IRegister } from '@recipe/shared';
@@ -24,7 +24,13 @@ export class SignUp implements OnInit {
 
   private asyncEmailValidator = inject(AsyncEmailValidator);
 
-  constructor() {}
+  constructor() {
+    effect(() => {
+      if (this.authService.isAuthenticated()) {
+        this.router.navigate(['/recipes']);
+      }
+    });
+  }
   ngOnInit(): void {
     this.signUpForm = new FormGroup(
       {

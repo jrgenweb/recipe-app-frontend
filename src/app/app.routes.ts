@@ -13,7 +13,7 @@ import { Favorites } from './pages/profile/favorites/favorites';
 
 import { AddRecipe } from './pages/profile/recipes/add-recipe/add-recipe';
 import { authGuard } from './shared/guards/auth.guard';
-import { guestGuard } from './shared/guards/ghuest.guard';
+
 import { General } from './pages/profile/general/general';
 import { Changepassword } from './pages/profile/changepassword/changepassword';
 
@@ -51,7 +51,8 @@ export const routes: Routes = [
       {
         path: 'profile',
         component: Profile, // Mindig betöltődik a tab menüvel
-        canActivate: [authGuard],
+
+        canActivateChild: [authGuard],
         children: [
           { path: '', redirectTo: 'general', pathMatch: 'full' }, // alapértelmezett tab
           { path: 'general', component: General },
@@ -71,8 +72,8 @@ export const routes: Routes = [
       },
 
       { path: 'error', component: Error },
-      { path: 'signin', component: SignIn, canActivate: [guestGuard] },
-      { path: 'signup', component: SignUp, canActivate: [guestGuard] },
+      { path: 'signin', component: SignIn },
+      { path: 'signup', component: SignUp },
       { path: '', redirectTo: '/recipes', pathMatch: 'full' },
     ],
   },

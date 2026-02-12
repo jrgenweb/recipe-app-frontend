@@ -12,18 +12,21 @@ export const roleGuard: CanActivateFn = (route) => {
 
   // 1. Ha nincs is token, azonnal tudjuk, hogy esélytelen
   if (!auth.getToken()) {
-    const redirectUrl = expectedRole === Role.ADMIN ? '/dashboard/signin' : '/signin';
-    return router.parseUrl(redirectUrl);
+    //const redirectUrl = expectedRole === Role.ADMIN ? '/dashboard/signin' : '/signin';
+    return router.parseUrl('/signin');
   }
 
   // 2. Ha van token, megvárjuk, amíg a currentUser betöltődik (ha még null)
   // A toObservable segít a signalt stream-mé alakítani
-  return toObservable(auth.currentUser).pipe(
+  return toObservable(auth.isInitialized).pipe(
     // Megvárjuk az első olyan értéket, ami nem null (vagy hiba esetén leállunk)
-    filter((user) => user !== null),
+    filter((init) => init),
     take(1),
-    //timeout(5000),
-    map((user) => {
+    map(() => {
+      const user = auth.currentUser();
+      if (!user) {
+        return router.parseUrl('/signin');
+      }
       if (expectedRole && user?.role !== expectedRole) {
         return router.parseUrl('/recipes');
       }
