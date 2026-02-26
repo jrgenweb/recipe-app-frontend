@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, effect, inject, OnInit, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { IRecipeList } from '@recipe/shared';
@@ -27,11 +27,10 @@ export class Recipes implements OnInit {
   isShowDeleteConfirm = false;
   selectedRecipe: IRecipeList | null = null;
 
-  constructor() {}
-  ngOnInit(): void {
-    //this.recipeService.reset();
+  constructor() {
     this.recipeStore.getOwnRecipes();
   }
+  ngOnInit(): void {}
 
   onImageError(event: Event) {
     const img = event.target as HTMLImageElement;

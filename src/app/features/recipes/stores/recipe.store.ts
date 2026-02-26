@@ -1,4 +1,4 @@
-import { inject, Injectable, signal, computed, effect } from '@angular/core';
+import { inject, Injectable, signal, computed, effect, OnInit } from '@angular/core';
 import { RecipeService } from '../services/recipe-service';
 import {
   IRecipeListResponse,
@@ -11,9 +11,10 @@ import { FavoriteService } from '../services/favorite-service';
 import { ToastService } from '../../../shared/services/toast-service';
 import { IUpdateRecipe } from '../../../shared/interfaces/update-recipe.interface';
 import { AuthService } from '../../../shared/services/auth-service';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Injectable({ providedIn: 'root' })
-export class RecipeStore {
+export class RecipeStore implements OnInit {
   private recipeService = inject(RecipeService);
   private favoriteService = inject(FavoriteService);
   private toastService = inject(ToastService);
@@ -63,7 +64,17 @@ export class RecipeStore {
       const myFilters = this.myFilters();
       this.getOwnRecipes(myFilters.search, myFilters.categoryId, myFilters.cuisineId);
     });
+
+    const isAuthenticated$ = toObservable(this.auth.isAuthenticated);
+    isAuthenticated$.subscribe((state) => {
+      if (state) {
+        this.loadFavorites();
+        this.getOwnRecipes();
+      }
+    });
   }
+
+  ngOnInit(): void {}
   // --- Actions ---
 
   /** Kezdeti betöltés vagy keresés */
@@ -74,9 +85,6 @@ export class RecipeStore {
       error: (err) => this._error.set(err.message),
       complete: () => this._loading.set(false),
     });
-    if (this.auth.isLoggedIn()) {
-      this.loadFavorites();
-    }
   }
 
   /** Végtelen görgetéshez (Infinite Scroll) */
@@ -99,7 +107,7 @@ export class RecipeStore {
   getOwnRecipes(search?: string, categoryId?: string, cuisineId?: string) {
     if (this._loading() || (this.total() > 0 && this.recipes().length >= this.total())) return;
     this._loading.set(true);
-    const skip = this.recipes().length;
+    const skip = this._myRecipes().data.length;
 
     this._loading.set(true);
     this.recipeService.getOwnRecipes(search, categoryId, cuisineId).subscribe({

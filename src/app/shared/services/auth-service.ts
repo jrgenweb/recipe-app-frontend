@@ -5,6 +5,7 @@ import { API_URL } from '../../config/config';
 import { ICreateUser, IRegister, IUser, LoginResponse } from '@recipe/shared';
 import { Router } from '@angular/router';
 import { ToastService } from './toast-service';
+import { RecipeStore } from '../../features/recipes/stores/recipe.store';
 
 interface ChangePasswordSuccess {
   updated: boolean;
@@ -65,6 +66,7 @@ export class AuthService {
         localStorage.setItem(this.tokenKey, res.access_token);
         this.currentUser.set(res.user);
         this.isInitialized.set(true);
+
         this.redirectAfterLogin();
       }),
     );
