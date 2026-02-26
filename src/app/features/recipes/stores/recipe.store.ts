@@ -105,10 +105,6 @@ export class RecipeStore implements OnInit {
   }
 
   getOwnRecipes(search?: string, categoryId?: string, cuisineId?: string) {
-    if (this._loading() || (this.total() > 0 && this.recipes().length >= this.total())) return;
-    this._loading.set(true);
-    const skip = this._myRecipes().data.length;
-
     this._loading.set(true);
     this.recipeService.getOwnRecipes(search, categoryId, cuisineId).subscribe({
       next: (resp) => {
@@ -139,7 +135,7 @@ export class RecipeStore implements OnInit {
       categoryId: string;
       cuisineId: string;
       ingredientIds: string[];
-    }>,
+    }>
   ) {
     this.filters.update((f) => ({ ...f, ...partial }));
     this.filterChange$.next();
