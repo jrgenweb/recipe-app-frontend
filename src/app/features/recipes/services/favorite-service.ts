@@ -5,7 +5,7 @@ import { IRecipeFavorite, IRecipeFavoriteResponse } from '@recipe/shared';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../../shared/services/auth-service';
 
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',

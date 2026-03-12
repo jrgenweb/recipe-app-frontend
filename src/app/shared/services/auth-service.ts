@@ -6,7 +6,7 @@ import { ICreateUser, IRegister, IUser, LoginResponse } from '@recipe/shared';
 import { Router } from '@angular/router';
 import { ToastService } from './toast-service';
 import { RecipeStore } from '../../features/recipes/stores/recipe.store';
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
 
 interface ChangePasswordSuccess {
   updated: boolean;

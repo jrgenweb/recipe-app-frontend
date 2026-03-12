@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { IRecipeCommentResponse } from '@recipe/shared';
 
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class CommentService {

@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { IAdminCreateUser, IUser, IUserList } from '@recipe/shared';
 import { BehaviorSubject, tap } from 'rxjs';
 import { ToastService } from '../../../../../shared/services/toast-service';
-import { environment } from '../../../../../environments/environment';
+import { environment } from '../../../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',

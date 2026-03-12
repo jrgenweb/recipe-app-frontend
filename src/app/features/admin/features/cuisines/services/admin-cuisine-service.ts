@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 
 import { BehaviorSubject } from 'rxjs';
 import { ToastService } from '../../../../../shared/services/toast-service';
-import { environment } from '../../../../../environments/environment';
+import { environment } from '../../../../../../environments/environment';
 
 export interface ICuisin {
   id?: string;

@@ -7,7 +7,7 @@ import {
   IRecipeIngredient,
   IUpdateRecipeIngredient,
 } from '@recipe/shared';
-import { environment } from '../../../../../environments/environment';
+import { environment } from '../../../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',

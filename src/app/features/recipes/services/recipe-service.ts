@@ -13,7 +13,7 @@ import {
 } from '@recipe/shared';
 
 import { IUpdateRecipe } from '../../../shared/interfaces/update-recipe.interface';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 
 //import { ToastService } from './toast-service';
 
