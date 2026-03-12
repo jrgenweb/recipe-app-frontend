@@ -4,7 +4,8 @@ import { inject, Injectable } from '@angular/core';
 import { IRecipeFavorite, IRecipeFavoriteResponse } from '@recipe/shared';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../../shared/services/auth-service';
-import { API_URL } from '../../../config/config';
+
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -19,16 +20,16 @@ export class FavoriteService {
   favoriteIds$ = new BehaviorSubject<string[]>([]);
 
   getAll() {
-    return this.http.get<IRecipeFavoriteResponse>(API_URL + '/favorites');
+    return this.http.get<IRecipeFavoriteResponse>(environment.apiUrl + '/favorites');
   }
 
   set(recipeId: string) {
-    return this.http.post<IRecipeFavorite>(API_URL + '/favorites/' + recipeId, {});
+    return this.http.post<IRecipeFavorite>(environment.apiUrl + '/favorites/' + recipeId, {});
   }
   delete(recipeId: string) {
-    return this.http.delete<{ deleted: boolean }>(API_URL + '/favorites/' + recipeId);
+    return this.http.delete<{ deleted: boolean }>(environment.apiUrl + '/favorites/' + recipeId);
   }
   check(recipeId: string) {
-    return this.http.get(API_URL + '/favorites/check/' + recipeId);
+    return this.http.get(environment.apiUrl + '/favorites/check/' + recipeId);
   }
 }

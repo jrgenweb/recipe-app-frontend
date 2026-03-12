@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 
 import { BehaviorSubject } from 'rxjs';
 import { ToastService } from '../../../../../shared/services/toast-service';
-import { API_URL } from '../../../../../config/config';
+import { environment } from '../../../../../environments/environment';
 
 export interface ICuisin {
   id?: string;
@@ -19,23 +19,25 @@ export class AdminCuisinService {
   constructor() {}
 
   getAll() {
-    return this.http.get<{ data: ICuisin[]; total: number }>(API_URL + '/cuisines');
+    return this.http.get<{ data: ICuisin[]; total: number }>(environment.apiUrl + '/cuisines');
   }
   fetchCuisines(search?: string, skip = 0, take = 20) {
     let params = new HttpParams().set('skip', skip).set('take', take);
     if (search) params = params.set('search', String(search));
 
-    return this.http.get<{ data: ICuisin[]; total: number }>(API_URL + '/cuisines', {
+    return this.http.get<{ data: ICuisin[]; total: number }>(environment.apiUrl + '/cuisines', {
       params,
     });
   }
   create(cuisinName: string) {
-    return this.http.post<ICuisin>(API_URL + '/cuisines', { name: cuisinName });
+    return this.http.post<ICuisin>(environment.apiUrl + '/cuisines', { name: cuisinName });
   }
   delete(id: string) {
-    return this.http.delete<{ deleted: boolean }>(API_URL + '/cuisines/' + id);
+    return this.http.delete<{ deleted: boolean }>(environment.apiUrl + '/cuisines/' + id);
   }
   update(cuisin: ICuisin) {
-    return this.http.patch<ICuisin>(API_URL + '/cuisines/' + cuisin.id, { name: cuisin.name });
+    return this.http.patch<ICuisin>(environment.apiUrl + '/cuisines/' + cuisin.id, {
+      name: cuisin.name,
+    });
   }
 }

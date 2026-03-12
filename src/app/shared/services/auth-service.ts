@@ -1,11 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { BehaviorSubject, Observable, of, tap } from 'rxjs';
-import { API_URL } from '../../config/config';
+
 import { ICreateUser, IRegister, IUser, LoginResponse } from '@recipe/shared';
 import { Router } from '@angular/router';
 import { ToastService } from './toast-service';
 import { RecipeStore } from '../../features/recipes/stores/recipe.store';
+import { environment } from '../../environments/environment';
 
 interface ChangePasswordSuccess {
   updated: boolean;
@@ -48,7 +49,7 @@ export class AuthService {
       return;
     }
 
-    this.http.get<IUser>(API_URL + '/auth/me').subscribe({
+    this.http.get<IUser>(environment.apiUrl + '/auth/me').subscribe({
       next: (user) => {
         this.currentUser.set(user);
         this.isInitialized.set(true);
@@ -61,15 +62,17 @@ export class AuthService {
   }
 
   login(email: string, password: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${API_URL}/auth/login`, { email, password }).pipe(
-      tap((res) => {
-        localStorage.setItem(this.tokenKey, res.access_token);
-        this.currentUser.set(res.user);
-        this.isInitialized.set(true);
+    return this.http
+      .post<LoginResponse>(`${environment.apiUrl}/auth/login`, { email, password })
+      .pipe(
+        tap((res) => {
+          localStorage.setItem(this.tokenKey, res.access_token);
+          this.currentUser.set(res.user);
+          this.isInitialized.set(true);
 
-        this.redirectAfterLogin();
-      }),
-    );
+          this.redirectAfterLogin();
+        }),
+      );
   }
   // Kijelentkezés
   logout() {
@@ -85,14 +88,20 @@ export class AuthService {
   }
 
   checkEmail(email: string) {
-    return this.http.post<{ available: boolean; message: String }>(API_URL + '/auth/check-email/', {
-      email,
-    });
+    return this.http.post<{ available: boolean; message: String }>(
+      environment.apiUrl + '/auth/check-email/',
+      {
+        email,
+      },
+    );
   }
   // Regisztráció
 
   register(user: IRegister) {
-    return this.http.post<{ user: IUser; access_token: string }>(API_URL + '/auth/register', user);
+    return this.http.post<{ user: IUser; access_token: string }>(
+      environment.apiUrl + '/auth/register',
+      user,
+    );
   }
 
   // Lekéri az access token-t
@@ -111,10 +120,13 @@ export class AuthService {
     if (!token) return of({ message: 'Nincs érvényes token', updated: false }); // nincs token, nem hívjuk
 
     return this.http
-      .patch<ChangePasswordResponse>(API_URL + '/users/change-password/' + this.currentUser()?.id, {
-        oldPassword,
-        newPassword,
-      })
+      .patch<ChangePasswordResponse>(
+        environment.apiUrl + '/users/change-password/' + this.currentUser()?.id,
+        {
+          oldPassword,
+          newPassword,
+        },
+      )
       .pipe(
         tap({
           next: (res) => {
@@ -143,7 +155,7 @@ export class AuthService {
     if (!token) return;
 
     this.http
-      .patch<{ message: string }>(API_URL + '/users/' + this.currentUser()?.id, user)
+      .patch<{ message: string }>(environment.apiUrl + '/users/' + this.currentUser()?.id, user)
       .subscribe({
         next: () => {
           this.loadCurrentUser(); // Frissíti a felhasználót a szerverről
@@ -155,7 +167,7 @@ export class AuthService {
     if (!token) return;
 
     this.http
-      .delete<{ deleted: boolean }>(API_URL + '/users/' + this.currentUser()?.id, {
+      .delete<{ deleted: boolean }>(environment.apiUrl + '/users/' + this.currentUser()?.id, {
         body: { password },
       })
       .subscribe({

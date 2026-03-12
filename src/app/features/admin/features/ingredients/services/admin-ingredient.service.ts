@@ -7,7 +7,7 @@ import {
   IRecipeIngredient,
   IUpdateRecipeIngredient,
 } from '@recipe/shared';
-import { API_URL } from '../../../../../config/config';
+import { environment } from '../../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -18,27 +18,35 @@ export class AdminIngredientService {
   constructor() {}
 
   getAll() {
-    return this.http.get<{ data: IRecipeIngredient[]; total: number }>(API_URL + '/ingredients');
+    return this.http.get<{ data: IRecipeIngredient[]; total: number }>(
+      environment.apiUrl + '/ingredients',
+    );
   }
 
   fetchIngredients(search?: string, skip = 0, take = 20) {
     let params = new HttpParams().set('skip', skip).set('take', take);
     if (search) params = params.set('search', String(search));
 
-    return this.http.get<{ data: IRecipeIngredient[]; total: number }>(API_URL + '/ingredients', {
-      params,
-    });
+    return this.http.get<{ data: IRecipeIngredient[]; total: number }>(
+      environment.apiUrl + '/ingredients',
+      {
+        params,
+      },
+    );
   }
 
   create(ingredient: ICreateRecipeIngredient) {
-    return this.http.post<IRecipeIngredient>(API_URL + '/ingredients', ingredient);
+    return this.http.post<IRecipeIngredient>(environment.apiUrl + '/ingredients', ingredient);
   }
 
   update(ingredientId: string, ingredient: IUpdateRecipeIngredient) {
-    return this.http.patch<IRecipeIngredient>(API_URL + '/ingredients/' + ingredientId, ingredient);
+    return this.http.patch<IRecipeIngredient>(
+      environment.apiUrl + '/ingredients/' + ingredientId,
+      ingredient,
+    );
   }
 
   delete(id: string) {
-    return this.http.delete<{ deleted: boolean }>(API_URL + '/ingredients/' + id);
+    return this.http.delete<{ deleted: boolean }>(environment.apiUrl + '/ingredients/' + id);
   }
 }

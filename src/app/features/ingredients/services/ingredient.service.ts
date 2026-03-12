@@ -4,7 +4,7 @@ import { BehaviorSubject } from 'rxjs';
 import { HttpClient, HttpParams } from '@angular/common/http';
 
 import { IRecipeIngredient } from '@recipe/shared';
-import { API_URL } from '../../../config/config';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -24,9 +24,12 @@ export class IngredientService {
     let params = new HttpParams().set('skip', skip).set('take', take);
     if (search) params = params.set('search', String(search));
 
-    return this.http.get<{ data: IRecipeIngredient[]; total: number }>(API_URL + '/ingredients', {
-      params,
-    });
+    return this.http.get<{ data: IRecipeIngredient[]; total: number }>(
+      environment.apiUrl + '/ingredients',
+      {
+        params,
+      },
+    );
   }
 
   reset() {
@@ -37,7 +40,7 @@ export class IngredientService {
 
   getAll() {
     this.http
-      .get<{ data: IRecipeIngredient[]; total: number }>(API_URL + '/ingredients')
+      .get<{ data: IRecipeIngredient[]; total: number }>(environment.apiUrl + '/ingredients')
       .subscribe((resp) => {
         this.ingredients$.next(resp.data);
       });

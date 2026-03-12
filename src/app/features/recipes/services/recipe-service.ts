@@ -12,8 +12,8 @@ import {
   IRecipeList,
 } from '@recipe/shared';
 
-import { API_URL } from '../../../config/config';
 import { IUpdateRecipe } from '../../../shared/interfaces/update-recipe.interface';
+import { environment } from '../../../environments/environment';
 
 //import { ToastService } from './toast-service';
 
@@ -33,7 +33,7 @@ export class RecipeService {
     if (ingredientIds && ingredientIds.length > 0) {
       params = params.set('ingredientIds', ingredientIds.join(','));
     }
-    return this.http.get<IRecipeListResponse>(API_URL + '/recipes', { params });
+    return this.http.get<IRecipeListResponse>(environment.apiUrl + '/recipes', { params });
   }
 
   fetchRecipes(
@@ -56,9 +56,12 @@ export class RecipeService {
     if (skip) params = params.set('skip', skip);
     if (take) params = params.set('take', take);
 
-    return this.http.get<IRecipeListResponse>(API_URL + (own ? '/recipes/my' : '/recipes'), {
-      params,
-    });
+    return this.http.get<IRecipeListResponse>(
+      environment.apiUrl + (own ? '/recipes/my' : '/recipes'),
+      {
+        params,
+      },
+    );
   }
 
   getOwnRecipes(search?: string, categoryId?: string, cuisineId?: string) {
@@ -66,32 +69,32 @@ export class RecipeService {
     if (categoryId && categoryId != 'all') params = params.set('categoryId', String(categoryId));
     if (search) params = params.set('search', String(search));
     if (cuisineId && cuisineId !== 'all') params = params.set('cuisineId', String(cuisineId));
-    return this.http.get<IRecipeListResponse>(API_URL + '/recipes/my', { params });
+    return this.http.get<IRecipeListResponse>(environment.apiUrl + '/recipes/my', { params });
   }
 
   get(id: string) {
-    return this.http.get<IRecipeDetail>(API_URL + '/recipes/' + id);
+    return this.http.get<IRecipeDetail>(environment.apiUrl + '/recipes/' + id);
   }
   create(recipe: ICreateRecipe) {
-    return this.http.post<IRecipeList>(API_URL + '/recipes', { ...recipe });
+    return this.http.post<IRecipeList>(environment.apiUrl + '/recipes', { ...recipe });
   }
 
   //
   delete(recipeId: string) {
-    return this.http.delete<{ deleted: boolean }>(API_URL + '/recipes/' + recipeId);
+    return this.http.delete<{ deleted: boolean }>(environment.apiUrl + '/recipes/' + recipeId);
   }
   update(recipeId: string, recipe: IUpdateRecipe) {
-    return this.http.patch(API_URL + '/recipes/' + recipeId, { ...recipe });
+    return this.http.patch(environment.apiUrl + '/recipes/' + recipeId, { ...recipe });
   }
 
   getRecipeDetail(recipeId: string) {
-    return this.http.get<IRecipeDetail>(API_URL + '/recipes/' + recipeId);
+    return this.http.get<IRecipeDetail>(environment.apiUrl + '/recipes/' + recipeId);
   }
   getRecipeWithComments(id: string) {
     return forkJoin({
-      recipe: this.http.get<IRecipeDetail>(API_URL + '/recipes/' + id),
+      recipe: this.http.get<IRecipeDetail>(environment.apiUrl + '/recipes/' + id),
       comments: this.http.get<{ data: IRecipeCommentResponse[] }>(
-        API_URL + '/recipes/' + id + '/comments',
+        environment.apiUrl + '/recipes/' + id + '/comments',
       ),
     }).pipe(
       map((res) => ({ recipe: res.recipe, comments: res.comments.data })),
@@ -107,16 +110,19 @@ export class RecipeService {
    */
   //recipes/:recipeId/ratings
   updateRating(recipeId: string, rate: number) {
-    return this.http.post<ISetRatingResponse>(API_URL + '/recipes/' + recipeId + '/ratings', {
-      rate: rate,
-    });
+    return this.http.post<ISetRatingResponse>(
+      environment.apiUrl + '/recipes/' + recipeId + '/ratings',
+      {
+        rate: rate,
+      },
+    );
   }
 
   getRatingStat(recipeId: string) {
-    return this.http.get(API_URL + '/recipes/' + recipeId + '/ratings/stat');
+    return this.http.get(environment.apiUrl + '/recipes/' + recipeId + '/ratings/stat');
   }
   //- `GET /recipes/:recipeId/ratings/me` – Saját értékelés (védett)
   getRatingMe(recipeId: string) {
-    return this.http.get(API_URL + '/recipes/' + recipeId + '/ratings/me');
+    return this.http.get(environment.apiUrl + '/recipes/' + recipeId + '/ratings/me');
   }
 }

@@ -11,8 +11,9 @@ import {
   IRecipeCommentResponse,
   IRecipeList,
 } from '@recipe/shared';
-import { API_URL } from '../../../../../config/config';
+
 import { IUpdateRecipe } from '../../../../../shared/interfaces/update-recipe.interface';
+import { environment } from '../../../../../environments/environment';
 
 //import { ToastService } from './toast-service';
 
@@ -32,7 +33,9 @@ export class AdminRecipeService {
     if (ingredientIds && ingredientIds.length > 0) {
       params = params.set('ingredientIds', ingredientIds.join(','));
     }
-    return this.http.get<IRecipeListResponse>(API_URL + '/recipes', { params }).pipe(delay(500));
+    return this.http
+      .get<IRecipeListResponse>(environment.apiUrl + '/recipes', { params })
+      .pipe(delay(500));
   }
 
   fetchRecipes(
@@ -56,7 +59,7 @@ export class AdminRecipeService {
     if (take) params = params.set('take', take);
 
     return this.http
-      .get<IRecipeListResponse>(API_URL + (own ? '/recipes/my' : '/recipes'), { params })
+      .get<IRecipeListResponse>(environment.apiUrl + (own ? '/recipes/my' : '/recipes'), { params })
       .pipe(delay(500)); //delay(500)
   }
 
@@ -66,32 +69,34 @@ export class AdminRecipeService {
     if (take) params = params.set('take', String(take));
     if (categoryId) params = params.set('categoryId', String(categoryId));
     if (search) params = params.set('search', String(search));
-    return this.http.get<IRecipeListResponse>(API_URL + '/recipes/my', { params });
+    return this.http.get<IRecipeListResponse>(environment.apiUrl + '/recipes/my', { params });
   }
 
   get(id: string) {
-    return this.http.get<IRecipeDetail>(API_URL + '/recipes/' + id);
+    return this.http.get<IRecipeDetail>(environment.apiUrl + '/recipes/' + id);
   }
   create(recipe: ICreateRecipe) {
-    return this.http.post<IRecipeList>(API_URL + '/recipes', { ...recipe });
+    return this.http.post<IRecipeList>(environment.apiUrl + '/recipes', { ...recipe });
   }
 
   //
   delete(recipeId: string) {
-    return this.http.delete<{ deleted: boolean }>(API_URL + '/recipes/admin/' + recipeId);
+    return this.http.delete<{ deleted: boolean }>(
+      environment.apiUrl + '/recipes/admin/' + recipeId,
+    );
   }
   update(recipeId: string, recipe: IUpdateRecipe) {
-    return this.http.patch(API_URL + '/recipes/' + recipeId, { ...recipe });
+    return this.http.patch(environment.apiUrl + '/recipes/' + recipeId, { ...recipe });
   }
 
   getRecipeDetail(recipeId: string) {
-    return this.http.get<IRecipeDetail>(API_URL + '/recipes/' + recipeId);
+    return this.http.get<IRecipeDetail>(environment.apiUrl + '/recipes/' + recipeId);
   }
   getRecipeWithComments(id: string) {
     return forkJoin({
-      recipe: this.http.get<IRecipeDetail>(API_URL + '/recipes/' + id),
+      recipe: this.http.get<IRecipeDetail>(environment.apiUrl + '/recipes/' + id),
       comments: this.http.get<{ data: IRecipeCommentResponse[] }>(
-        API_URL + '/recipes/' + id + '/comments',
+        environment.apiUrl + '/recipes/' + id + '/comments',
       ),
     }).pipe(
       map((res) => ({ recipe: res.recipe, comments: res.comments.data })),
@@ -107,16 +112,19 @@ export class AdminRecipeService {
    */
   //recipes/:recipeId/ratings
   updateRating(recipeId: string, rate: number) {
-    return this.http.post<ISetRatingResponse>(API_URL + '/recipes/' + recipeId + '/ratings', {
-      rate: rate,
-    });
+    return this.http.post<ISetRatingResponse>(
+      environment.apiUrl + '/recipes/' + recipeId + '/ratings',
+      {
+        rate: rate,
+      },
+    );
   }
 
   getRatingStat(recipeId: string) {
-    return this.http.get(API_URL + '/recipes/' + recipeId + '/ratings/stat');
+    return this.http.get(environment.apiUrl + '/recipes/' + recipeId + '/ratings/stat');
   }
   //- `GET /recipes/:recipeId/ratings/me` – Saját értékelés (védett)
   getRatingMe(recipeId: string) {
-    return this.http.get(API_URL + '/recipes/' + recipeId + '/ratings/me');
+    return this.http.get(environment.apiUrl + '/recipes/' + recipeId + '/ratings/me');
   }
 }
