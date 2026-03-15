@@ -16,11 +16,11 @@
     <label for="searchInput">Keresés</label>
   </div>
 </div>
-@if (store.isLoading()) {
+@let loading = store.isLoading();
+@let empty = store.cuisines().length === 0;
+@if (loading && empty) {
   <app-spinner></app-spinner>
-} @else if (!store.isLoading() && store.cuisines().length === 0) {
-  <p class="text-center my-3 p-2">Nincs találat</p>
-} @else {
+} @else if (!empty) {
   <div class="table-responsive">
     <table class="table table-hover table-striped">
       <thead>
@@ -54,6 +54,11 @@
       </tbody>
     </table>
   </div>
+} @else {
+  <p class="text-center my-3 p-2">Nincs találat</p>
+}
+@if (loading && !empty) {
+  <app-spinner></app-spinner>
 }
 
 <app-infinite-scroll #inf (loadMore)="loadMore(inf)"></app-infinite-scroll>

@@ -32,11 +32,13 @@
   </div>
 </div>
 
-@let isLoading = userStore.isLoading();
+@let loading = userStore.isLoading();
 @let users = userStore.users();
 @let empty = users.length === 0;
 
-@if (!isLoading && !empty) {
+@if (loading && empty) {
+  <app-spinner></app-spinner>
+} @else if (!empty) {
   <div class="table-responsive">
     <table class="table table-striped table-hover">
       <thead>
@@ -90,10 +92,13 @@
       </tbody>
     </table>
   </div>
-} @else if (isLoading) {
-  <app-spinner></app-spinner>
+} @else {
+  <p class="text-center my-3 p-2">Nincs találat</p>
 }
 
+@if (loading && !empty) {
+  <app-spinner></app-spinner>
+}
 <app-infinite-scroll (loadMore)="loadMore(inf)" #inf></app-infinite-scroll>
 <app-confirm-modal
   [title]="'Törlés megerősítése'"

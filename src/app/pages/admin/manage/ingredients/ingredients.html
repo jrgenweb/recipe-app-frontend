@@ -16,11 +16,9 @@
   </div>
 </div>
 
-@if (vm().loading) {
+@if (vm().loading && !vm().hasResults) {
   <app-spinner></app-spinner>
-} @else if (!vm().loading && vm().ingredients.length === 0) {
-  <p class="text-center my-3 p-2">Nincs találat</p>
-} @else {
+} @else if (vm().hasResults) {
   <div class="table-responsive">
     <table class="table table-hover table-striped">
       <thead>
@@ -58,6 +56,11 @@
       </tbody>
     </table>
   </div>
+} @else {
+  <p class="text-center my-3 p-2">Nincs találat</p>
+}
+@if (vm().loading && vm().hasResults) {
+  <app-spinner></app-spinner>
 }
 
 <app-infinite-scroll (loadMore)="loadMore(inf)" #inf></app-infinite-scroll>

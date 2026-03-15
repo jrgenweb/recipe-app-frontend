@@ -48,6 +48,7 @@ export class AdminRecipeStore {
 
   constructor() {
     this.filterChange$.pipe(debounceTime(300)).subscribe(() => {
+      this._recipes.set({ data: [], total: 0 }); // Szűréskor ürítjük a listát, hogy ne keveredjenek a régi és új találatok
       const { search, categoryId, cuisineId, ingredientIds } = this.filters();
       this.loadAll(search, categoryId, cuisineId, ingredientIds);
     });

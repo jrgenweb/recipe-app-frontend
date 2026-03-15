@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, viewChild, ViewChild } from '@angular/core';
 
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { IRecipeIngredient, IRecipeList } from '@recipe/shared';
@@ -9,6 +9,7 @@ import { AdminRecipeStore } from '../../../../features/admin/features/recipes/st
 import { AdminRecipeFilter } from '../../../../features/admin/features/recipes/components/admin-recipe-filter/admin-recipe-filter';
 import { AdminRecipeCard } from '../../../../features/admin/features/recipes/components/admin-recipe-card/admin-recipe-card';
 import { Spinner } from '../../../../components/spinner/spinner';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-recipes',
@@ -17,6 +18,7 @@ import { Spinner } from '../../../../components/spinner/spinner';
   styleUrl: './recipes.scss',
 })
 export class Recipes implements OnInit {
+  @ViewChild('inf') inf?: InfiniteScroll;
   // Stores
   public recipeStore = inject(AdminRecipeStore);
   private route = inject(Router);
@@ -24,6 +26,12 @@ export class Recipes implements OnInit {
   isShowDeleteConfirm = false;
   selectedRecipe = signal<IRecipeList | null>(null);
 
+  loadingSubscription$ = toObservable(this.recipeStore.isLoading).subscribe((loading) => {
+    const allLoaded = this.recipeStore.recipes().length >= this.recipeStore.total();
+    if (!loading && !allLoaded && this.inf && !this.inf.loading) {
+      requestAnimationFrame(() => this.inf!.checkAnchor());
+    }
+  });
   constructor() {}
 
   ngOnInit(): void {

@@ -1,9 +1,18 @@
-import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+  ViewChild,
+} from '@angular/core';
 
 import { AsyncPipe } from '@angular/common';
 
 import { IRecipeIngredient } from '@recipe/shared';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { ConfirmModal } from '../../../../components/confirm-modal/confirm-modal';
 import { AddIngredientModal } from '../../../../features/admin/features/ingredients/components/add-ingredient-modal/add-ingredient-modal';
 import { Spinner } from '../../../../components/spinner/spinner';
@@ -17,7 +26,8 @@ import { AdminIngredientStore } from '../../../../features/admin/features/ingred
   templateUrl: './ingredients.html',
   styleUrl: './ingredients.scss',
 })
-export class Ingredients implements OnInit {
+export class Ingredients implements OnInit, OnDestroy {
+  @ViewChild('inf') inf?: InfiniteScroll;
   isConfirmModalShow = false;
   isOpenAddIngredientModal = false;
   selectedIngredient?: IRecipeIngredient;
@@ -28,7 +38,12 @@ export class Ingredients implements OnInit {
   scrollSignal = signal(false);
 
   isShowDeleteConfirm = signal(false);
-
+  loadingSubscription$ = toObservable(this.ingredientStore.isLoading).subscribe((loading) => {
+    const allLoaded = this.ingredientStore.ingredients().length >= this.ingredientStore.total();
+    if (!loading && !allLoaded && this.inf && !this.inf.loading) {
+      requestAnimationFrame(() => this.inf!.checkAnchor());
+    }
+  });
   // Computed view model
   vm = computed(() => ({
     searchString: this.searchString(),
@@ -62,7 +77,7 @@ export class Ingredients implements OnInit {
   }
 
   loadNext() {
-    this.ingredientStore.loadNext(this.searchString());
+    this.ingredientStore.loadNext(this.searchString().toLowerCase());
   }
 
   changeSearchString(searchString: string) {
@@ -87,5 +102,8 @@ export class Ingredients implements OnInit {
       this.ingredientStore.delete(this.selectedIngredient.id);
     }
     this.isConfirmModalShow = false;
+  }
+  ngOnDestroy() {
+    this.loadingSubscription$.unsubscribe();
   }
 }

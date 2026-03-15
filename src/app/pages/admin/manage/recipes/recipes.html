@@ -17,19 +17,23 @@
 @let empty = recipes.length === 0;
 
 <div class="row mt-3">
-  @for (recipe of recipeStore.recipes(); track $index) {
-    <div class="col-6 col-md-4 col-lg-3 mb-3">
-      <app-admin-recipe-card
-        [recipe]="recipe"
-        (confirmDeleteEvent)="showDeleteConfirm($event)"
-        editUrl="/dashboard/manage/recipes/edit"
-      >
-      </app-admin-recipe-card>
-    </div>
-  } @empty {
+  @if (isLoading && empty) {
+    <app-spinner></app-spinner>
+  } @else if (!empty) {
+    @for (recipe of recipes; track $index) {
+      <div class="col-6 col-md-4 col-lg-3 mb-3">
+        <app-admin-recipe-card
+          [recipe]="recipe"
+          (confirmDeleteEvent)="showDeleteConfirm($event)"
+          editUrl="/dashboard/manage/recipes/edit"
+        >
+        </app-admin-recipe-card>
+      </div>
+    }
+  } @else {
     <p class="text-center my-3">Nincs találat</p>
   }
-  @if (isLoading) {
+  @if (isLoading && !empty) {
     <app-spinner></app-spinner>
   }
 </div>

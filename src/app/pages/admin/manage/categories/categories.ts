@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnDestroy, signal, ViewChild } from '@angular/core';
 
 import { AsyncPipe } from '@angular/common';
 
@@ -10,6 +10,7 @@ import { InfiniteScroll } from '../../../../components/infinite-scroll/infinite-
 import { Spinner } from '../../../../components/spinner/spinner';
 
 import { AdminCategoryStore } from '../../../../features/admin/features/categories/stores/admin-category.store';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-categories',
@@ -17,7 +18,8 @@ import { AdminCategoryStore } from '../../../../features/admin/features/categori
   templateUrl: './categories.html',
   styleUrl: './categories.scss',
 })
-export class Categories {
+export class Categories implements OnDestroy {
+  @ViewChild('inf') inf?: InfiniteScroll;
   isConfirmModalShow = false;
   isOpenAddCategoryModal = false;
   selectedCategory?: IRecipeCategory;
@@ -26,7 +28,12 @@ export class Categories {
   isShowDeleteConfirm = signal(false);
   searchString = signal('');
   scrollSignal = signal(false);
-
+  loadingSubscription$ = toObservable(this.store.isLoading).subscribe((loading) => {
+    const allLoaded = this.store.categories().length >= this.store.total();
+    if (!loading && !allLoaded && this.inf && !this.inf.loading) {
+      requestAnimationFrame(() => this.inf!.checkAnchor());
+    }
+  });
   constructor() {
     this.store.loadAll();
   }
@@ -56,5 +63,8 @@ export class Categories {
       this.selectedCategory = undefined;
     }
     this.isOpenAddCategoryModal = true;
+  }
+  ngOnDestroy() {
+    this.loadingSubscription$.unsubscribe();
   }
 }
