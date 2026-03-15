@@ -14,6 +14,8 @@ import { RecipeStore } from '../../../features/recipes/stores/recipe.store';
 import { MyRecipeCard } from '../../../features/recipes/components/my-recipe-card/my-recipe-card';
 import { Spinner } from '../../../components/spinner/spinner';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { CuisineStore } from '../../../features/cuisines/stores/cuisine.store';
+import { CategoryStore } from '../../../features/categories/store/category.store';
 
 @Component({
   selector: 'app-recipes',
@@ -25,9 +27,27 @@ export class Recipes implements OnInit {
   @ViewChild(InfiniteScroll) inf!: InfiniteScroll;
   public authService = inject(AuthService);
   public recipeStore = inject(RecipeStore);
-
+  public categoryStore = inject(CategoryStore);
+  public cuisineStore = inject(CuisineStore);
   isShowDeleteConfirm = false;
   selectedRecipe: IRecipeList | null = null;
+
+  public selectedCategory = (() => {
+    const c = this.categoryStore
+      .categories()
+      .find((c) => c.id === this.recipeStore.myFilters().categoryId);
+
+    return c ? { value: c.id!, label: c.name } : { value: 'all', label: 'Összes' };
+  })();
+  public selectedCuisine = (() => {
+    const c = this.cuisineStore
+      .cuisines()
+      .find((c) => c.id === this.recipeStore.myFilters().cuisineId);
+
+    return c ? { value: c.id!, label: c.name } : { value: 'all', label: 'Összes' };
+  })();
+  public searchString = this.recipeStore.myFilters().search || '';
+
   loadingSubscription$ = toObservable(this.recipeStore.isLoading).subscribe((loading) => {
     const allLoaded = this.recipeStore.recipes().length >= this.recipeStore.total();
     if (!loading && !allLoaded && this.inf && !this.inf.loading) {
@@ -35,9 +55,7 @@ export class Recipes implements OnInit {
     }
   });
   constructor() {}
-  ngOnInit(): void {
-    //this.recipeStore.loadNextOwn();
-  }
+  ngOnInit(): void {}
 
   onImageError(event: Event) {
     const img = event.target as HTMLImageElement;

@@ -9,6 +9,8 @@ import { SelectIngredient } from '../../features/recipes/components/select-ingre
 import { RecipeStore } from '../../features/recipes/stores/recipe.store';
 import { Spinner } from '../../components/spinner/spinner';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { CuisineStore } from '../../features/cuisines/stores/cuisine.store';
+import { CategoryStore } from '../../features/categories/store/category.store';
 
 @Component({
   selector: 'app-recipes',
@@ -19,6 +21,26 @@ import { toObservable } from '@angular/core/rxjs-interop';
 export class Recipes implements OnInit, OnDestroy {
   @ViewChild(InfiniteScroll) inf!: InfiniteScroll;
   public recipeStore = inject(RecipeStore);
+  public categoryStore: CategoryStore = inject(CategoryStore);
+  public cuisineStore: CuisineStore = inject(CuisineStore);
+
+  public selectedCategory = (() => {
+    const c = this.categoryStore
+      .categories()
+      .find((c) => c.id === this.recipeStore.filters().categoryId);
+
+    return c ? { value: c.id!, label: c.name } : { value: 'all', label: 'Összes' };
+  })();
+  public selectedCuisine = (() => {
+    const c = this.cuisineStore
+      .cuisines()
+      .find((c) => c.id === this.recipeStore.filters().cuisineId);
+
+    return c ? { value: c.id!, label: c.name } : { value: 'all', label: 'Összes' };
+  })();
+
+  public searchString = this.recipeStore.filters().search || '';
+
   ingredientIds = signal<string[]>([]);
 
   loadingSubscription$ = toObservable(this.recipeStore.isLoading).subscribe((loading) => {
@@ -30,9 +52,7 @@ export class Recipes implements OnInit, OnDestroy {
 
   constructor() {}
 
-  ngOnInit(): void {
-    //this.recipeStore.loadNext();
-  }
+  ngOnInit(): void {}
 
   loadMore(inf: InfiniteScroll) {
     this.recipeStore.loadNext();
@@ -53,7 +73,6 @@ export class Recipes implements OnInit, OnDestroy {
 
   onChangeIngredient(ingredients: IRecipeIngredient[]) {
     const ingredientIds = ingredients.map((i) => i.id);
-
     this.recipeStore.updateFilters({ ingredientIds });
   }
   ngOnDestroy(): void {

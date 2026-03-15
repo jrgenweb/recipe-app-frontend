@@ -10,6 +10,9 @@
         (changeCategoryIdEvt)="changeCategory($event)"
         (changeSearchStringEvt)="changeSearchString($event)"
         (changeCusinIdEvt)="changeCuisin($event)"
+        [selectedCategory]="selectedCategory"
+        [selectedCuisine]="selectedCuisine"
+        [searchString]="searchString"
       ></app-recipe-filter>
     </div>
     <div class="mt-3">
