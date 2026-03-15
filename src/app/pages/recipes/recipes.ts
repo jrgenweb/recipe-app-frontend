@@ -8,6 +8,8 @@ import { RecipeCard } from '../../features/recipes/components/recipe-card/recipe
 import { SelectIngredient } from '../../features/recipes/components/select-ingredient/select-ingredient';
 import { RecipeStore } from '../../features/recipes/stores/recipe.store';
 import { Spinner } from '../../components/spinner/spinner';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-recipes',
@@ -20,10 +22,19 @@ export class Recipes implements OnInit {
 
   ingredientIds = signal<string[]>([]);
 
-  constructor() {}
+  filterChanged = signal(false);
+  recipeLoading = toObservable(this.recipeStore.isLoading);
+
+  constructor() {
+    this.recipeLoading.subscribe((loading) => {
+      if (!loading) {
+        this.filterChanged.set(false);
+      }
+    });
+  }
 
   ngOnInit(): void {
-    this.recipeStore.loadAll();
+    this.recipeStore.loadNext();
   }
 
   loadMore(inf: InfiniteScroll) {
@@ -32,19 +43,23 @@ export class Recipes implements OnInit {
   }
 
   changeCategory(categoryId: string) {
+    this.filterChanged.set(true);
     this.recipeStore.updateFilters({ categoryId });
   }
 
   changeCuisin(cuisineId: string) {
+    this.filterChanged.set(true);
     this.recipeStore.updateFilters({ cuisineId });
   }
 
   changeSearchString(search: string) {
+    this.filterChanged.set(true);
     this.recipeStore.updateFilters({ search });
   }
 
   onChangeIngredient(ingredients: IRecipeIngredient[]) {
     const ingredientIds = ingredients.map((i) => i.id);
+    this.filterChanged.set(true);
     this.recipeStore.updateFilters({ ingredientIds });
   }
 }

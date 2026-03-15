@@ -94,7 +94,7 @@ export class RecipeStore implements OnInit {
     const skip = this.recipes().length;
     const { search, categoryId, cuisineId, ingredientIds } = this.filters();
     this.recipeService
-      .fetchRecipes(search, categoryId, cuisineId, ingredientIds, skip, 20, false)
+      .fetchRecipes(search, categoryId, cuisineId, ingredientIds, skip, 10, false)
       .pipe(finalize(() => this._loading.set(false)))
       .subscribe((resp) => {
         this._recipes.update((state) => ({
@@ -135,7 +135,7 @@ export class RecipeStore implements OnInit {
       categoryId: string;
       cuisineId: string;
       ingredientIds: string[];
-    }>
+    }>,
   ) {
     this.filters.update((f) => ({ ...f, ...partial }));
     this.filterChange$.next();
