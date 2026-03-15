@@ -1,137 +1,143 @@
-@if (recipeStore.selectedRecipe()) {
-  <!-- Header: Recept név + Vissza link -->
-  <div
-    class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center my-4"
-  >
-    <h2 class="mb-2 mb-md-0">{{ recipeStore.selectedRecipe()?.name }}</h2>
-    <a routerLink="/recipes" class="btn btn-outline-secondary btn-sm">Vissza</a>
+@if (recipeStore.isLoading()) {
+  <div class="py-5">
+    <app-spinner size="lg" severity="primary"></app-spinner>
   </div>
+} @else {
+  @if (recipeStore.selectedRecipe()) {
+    <!-- Header: Recept név + Vissza link -->
+    <div
+      class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center my-4"
+    >
+      <h2 class="mb-2 mb-md-0">{{ recipeStore.selectedRecipe()?.name }}</h2>
+      <a routerLink="/recipes" class="btn btn-outline-secondary btn-sm">Vissza</a>
+    </div>
 
-  <!-- Recept info kártya -->
-  <div class="card mb-4">
-    <div class="card-body">
-      <div
-        class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-2"
-      >
-        <div class="fw-bold">Feltöltötte: {{ recipeStore.selectedRecipe()?.user?.name }}</div>
-        <div class="text-muted small">
-          {{ recipeStore.selectedRecipe()?.createdAt | date: 'yyyy.MM.dd' }}
+    <!-- Recept info kártya -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div
+          class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-2"
+        >
+          <div class="fw-bold">Feltöltötte: {{ recipeStore.selectedRecipe()?.user?.name }}</div>
+          <div class="text-muted small">
+            {{ recipeStore.selectedRecipe()?.createdAt | date: 'yyyy.MM.dd' }}
+          </div>
+        </div>
+
+        <div
+          class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 gap-2"
+        >
+          <div class="text-muted small">Hozzászólások: {{ commentStore.comments().length }}</div>
+          <app-rating
+            [disabled]="false"
+            [avgRate]="recipeStore.selectedRecipe()!.avgRating"
+            (changeRateEvt)="onChangeRate($event)"
+            [recipeId]="recipeStore.selectedRecipe()!.id"
+          ></app-rating>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mt-2">
+          <span class="badge rounded-pill text-bg-primary">{{
+            recipeStore.selectedRecipe()?.cuisine?.name
+          }}</span>
+          @for (c of recipeStore.selectedRecipe()?.recipeCategories; track c.category.id) {
+            <span class="badge rounded-pill text-bg-light text-dark">{{ c.category.name }}</span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Galéria -->
+    <div class="mb-4">
+      <app-recipe-gallery
+        [items]="recipeStore.selectedRecipe()!.recipeImages"
+        [title]="recipeStore.selectedRecipe()!.name"
+        class=""
+      ></app-recipe-gallery>
+    </div>
+
+    <!-- Leírás -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <p class="mb-0">{{ recipeStore.selectedRecipe()?.description }}</p>
+      </div>
+    </div>
+
+    <!-- Hozzávalók + Elkészítés -->
+
+    <div class="row mb-4 gap-md-0 gap-4">
+      <div class="col-12 col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <h3 class="mb-3">Hozzávalók</h3>
+            <table class="table table-striped mb-0">
+              <tbody>
+                @for (ingredient of recipeStore.selectedRecipe()?.recipeIngredients; track $index) {
+                  <tr>
+                    <td>{{ ingredient.ingredient.name }}</td>
+                    <td>{{ ingredient.quantity }} {{ ingredient.ingredient.unit }}</td>
+                  </tr>
+                } @empty {
+                  <p class="text-center text-muted">Nincsenek megadva hozzávalók</p>
+                }
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <div
-        class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2 gap-2"
-      >
-        <div class="text-muted small">Hozzászólások: {{ commentStore.comments().length }}</div>
-        <app-rating
-          [disabled]="false"
-          [avgRate]="recipeStore.selectedRecipe()!.avgRating"
-          (changeRateEvt)="onChangeRate($event)"
-          [recipeId]="recipeStore.selectedRecipe()!.id"
-        ></app-rating>
-      </div>
-
-      <div class="d-flex flex-wrap gap-2 mt-2">
-        <span class="badge rounded-pill text-bg-primary">{{
-          recipeStore.selectedRecipe()?.cuisine?.name
-        }}</span>
-        @for (c of recipeStore.selectedRecipe()?.recipeCategories; track c.category.id) {
-          <span class="badge rounded-pill text-bg-light text-dark">{{ c.category.name }}</span>
-        }
-      </div>
-    </div>
-  </div>
-
-  <!-- Galéria -->
-  <div class="mb-4">
-    <app-recipe-gallery
-      [items]="recipeStore.selectedRecipe()!.recipeImages"
-      [title]="recipeStore.selectedRecipe()!.name"
-      class=""
-    ></app-recipe-gallery>
-  </div>
-
-  <!-- Leírás -->
-  <div class="card mb-4">
-    <div class="card-body">
-      <p class="mb-0">{{ recipeStore.selectedRecipe()?.description }}</p>
-    </div>
-  </div>
-
-  <!-- Hozzávalók + Elkészítés -->
-
-  <div class="row mb-4 gap-md-0 gap-4">
-    <div class="col-12 col-md-6">
-      <div class="card h-100">
-        <div class="card-body">
-          <h3 class="mb-3">Hozzávalók</h3>
-          <table class="table table-striped mb-0">
-            <tbody>
-              @for (ingredient of recipeStore.selectedRecipe()?.recipeIngredients; track $index) {
-                <tr>
-                  <td>{{ ingredient.ingredient.name }}</td>
-                  <td>{{ ingredient.quantity }} {{ ingredient.ingredient.unit }}</td>
-                </tr>
+      <div class="col-12 col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <h3 class="mb-3">Elkészítés</h3>
+            <div class="d-flex flex-column gap-3">
+              @for (step of recipeStore.selectedRecipe()?.recipeSteps; track $index) {
+                <div class="p-3 rounded-2 shadow-sm bg-light">
+                  <h4 class="mb-1">{{ $index + 1 }}. {{ step.name }}</h4>
+                  <p class="mb-0">{{ step.description }}</p>
+                </div>
               } @empty {
-                <p class="text-center text-muted">Nincsenek megadva hozzávalók</p>
+                <p class="text-center text-muted">Nincsenek megadva elkészítési lépések</p>
               }
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-12 col-md-6">
-      <div class="card h-100">
-        <div class="card-body">
-          <h3 class="mb-3">Elkészítés</h3>
-          <div class="d-flex flex-column gap-3">
-            @for (step of recipeStore.selectedRecipe()?.recipeSteps; track $index) {
-              <div class="p-3 rounded-2 shadow-sm bg-light">
-                <h4 class="mb-1">{{ $index + 1 }}. {{ step.name }}</h4>
-                <p class="mb-0">{{ step.description }}</p>
-              </div>
-            } @empty {
-              <p class="text-center text-muted">Nincsenek megadva elkészítési lépések</p>
-            }
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Kommentek -->
-
-  <div class="mb-4">
-    <h3 class="mb-3">Hozzászólások ({{ commentStore.comments().length }})</h3>
-
-    <app-add-comment
-      [recipeId]="recipeStore.selectedRecipe()!.id"
-      (onCommentEvt)="onComment($event)"
-      class="mb-3"
-    ></app-add-comment>
-
-    @if (commentStore.comments().length === 0) {
-      <p class="text-center text-muted">Nincsenek kommentek</p>
-    } @else {
-      @for (comment of commentStore.comments(); track $index) {
-        <div class="card my-2">
-          <div class="card-body d-flex gap-3">
-            <div class="d-flex align-items-center gap-2" style="min-width: 150px">
-              <app-profile-picture
-                [src]="comment.user.picture"
-                [title]="comment.user.name"
-                size="md"
-              ></app-profile-picture>
-              <div>
-                <h5 class="fs-6 mb-0">{{ comment.user.name }}</h5>
-                <small class="text-muted fst-italic">{{ comment.createdAt | timeAgo }}</small>
-              </div>
             </div>
-            <p class="mb-0 flex-grow-1">{{ comment.text }}</p>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Kommentek -->
+
+    <div class="mb-4">
+      <h3 class="mb-3">Hozzászólások ({{ commentStore.comments().length }})</h3>
+
+      <app-add-comment
+        [recipeId]="recipeStore.selectedRecipe()!.id"
+        (onCommentEvt)="onComment($event)"
+        class="mb-3"
+      ></app-add-comment>
+
+      @if (commentStore.comments().length === 0) {
+        <p class="text-center text-muted">Nincsenek kommentek</p>
+      } @else {
+        @for (comment of commentStore.comments(); track $index) {
+          <div class="card my-2">
+            <div class="card-body d-flex gap-3">
+              <div class="d-flex align-items-center gap-2" style="min-width: 150px">
+                <app-profile-picture
+                  [src]="comment.user.picture"
+                  [title]="comment.user.name"
+                  size="md"
+                ></app-profile-picture>
+                <div>
+                  <h5 class="fs-6 mb-0">{{ comment.user.name }}</h5>
+                  <small class="text-muted fst-italic">{{ comment.createdAt | timeAgo }}</small>
+                </div>
+              </div>
+              <p class="mb-0 flex-grow-1">{{ comment.text }}</p>
+            </div>
+          </div>
+        }
       }
-    }
-  </div>
+    </div>
+  }
 }
