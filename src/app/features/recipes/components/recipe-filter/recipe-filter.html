@@ -16,6 +16,7 @@
     (changeSelectedEvt)="onCategoryChange($event)"
     [(ngModel)]="selectedCategory"
     [multiple]="false"
+    [loading]="categoryStore.isLoading()"
   ></app-select>
 
   <app-select
@@ -23,6 +24,7 @@
     (changeSelectedEvt)="onCuisinChange($event)"
     [(ngModel)]="selectedCuisine"
     [multiple]="false"
+    [loading]="cuisineStore.isLoading()"
   >
   </app-select>
 </div>

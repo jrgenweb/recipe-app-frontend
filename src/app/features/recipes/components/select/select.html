@@ -9,18 +9,22 @@
   >
     {{ allOption.label }}
   </span>
-  <div class="d-flex overflow-x-auto overflow-y-hidden gap-2">
-    @for (item of displayItems(); track $index) {
-      <span
-        class="badge rounded-pill fs-6"
-        [class.bg-primary]="isSelected(item)()"
-        [class.bg-light]="!isSelected(item)()"
-        [class.text-light]="isSelected(item)()"
-        [class.text-dark]="!isSelected(item)()"
-        (click)="onItemClick(item)"
-      >
-        {{ item.label }}
-      </span>
-    }
-  </div>
+  @if (loading) {
+    <app-spinner size="sm"></app-spinner>
+  } @else {
+    <div class="d-flex overflow-x-auto overflow-y-hidden gap-2">
+      @for (item of displayItems(); track $index) {
+        <span
+          class="badge rounded-pill fs-6"
+          [class.bg-primary]="isSelected(item)()"
+          [class.bg-light]="!isSelected(item)()"
+          [class.text-light]="isSelected(item)()"
+          [class.text-dark]="!isSelected(item)()"
+          (click)="onItemClick(item)"
+        >
+          {{ item.label }}
+        </span>
+      }
+    </div>
+  }
 </div>

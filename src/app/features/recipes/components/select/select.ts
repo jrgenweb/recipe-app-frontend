@@ -10,6 +10,7 @@ import {
   effect,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Spinner } from '../../../../components/spinner/spinner';
 
 export interface ISelect {
   value: string | number;
@@ -22,6 +23,7 @@ export type TSelect = ISelect | ISelect[];
   selector: 'app-select',
   templateUrl: './select.html',
   styleUrls: ['./select.scss'],
+  imports: [Spinner],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -33,6 +35,7 @@ export type TSelect = ISelect | ISelect[];
 export class Select implements ControlValueAccessor, OnChanges {
   @Input() items: ISelect[] = [];
   @Input() multiple = true;
+  @Input() loading = false;
   @Output() changeSelectedEvt = new EventEmitter<TSelect>();
 
   allOption: ISelect = { label: 'Összes', value: 'all' };
