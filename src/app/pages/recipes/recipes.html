@@ -23,9 +23,9 @@
 @let recipes = recipeStore.recipes();
 @let isLoading = recipeStore.isLoading();
 <div class="row mt-5">
-  @if (filterChanged()) {
+  @if (isLoading && recipes.length === 0) {
     <app-spinner></app-spinner>
-  } @else {
+  } @else if (recipes.length > 0) {
     @for (recipe of recipes; track recipe.id) {
       <div class="col-6 col-md-6 col-lg-4 mb-3">
         <app-recipe-card
@@ -33,13 +33,13 @@
           [isFavorite]="recipeStore.isFavorite(recipe.id)()"
         ></app-recipe-card>
       </div>
-    } @empty {
-      <p class="text-center my-3">Nincs találat</p>
     }
+  } @else {
+    <p class="text-center my-3">Nincs találat</p>
+  }
 
-    @if (isLoading) {
-      <app-spinner></app-spinner>
-    }
+  @if (isLoading && recipes.length > 0) {
+    <app-spinner></app-spinner>
   }
 </div>
 

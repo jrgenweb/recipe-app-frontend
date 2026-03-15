@@ -8,9 +8,7 @@ import { IRecipeImage } from '@recipe/shared';
   styleUrl: './recipe-gallery.scss',
 })
 export class RecipeGallery implements OnInit {
-  ngOnInit(): void {
-    console.log(this.items);
-  }
+  ngOnInit(): void {}
   @Input() items!: IRecipeImage[];
   @Input() title!: string;
 

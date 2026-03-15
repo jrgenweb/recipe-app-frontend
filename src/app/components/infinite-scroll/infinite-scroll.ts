@@ -1,12 +1,14 @@
 import {
   AfterViewInit,
   Component,
+  computed,
   ElementRef,
   EventEmitter,
   OnDestroy,
   Output,
   ViewChild,
 } from '@angular/core';
+import { single } from 'rxjs';
 
 @Component({
   selector: 'app-infinite-scroll',
@@ -21,7 +23,7 @@ export class InfiniteScroll implements AfterViewInit, OnDestroy {
   @Output() loadMore = new EventEmitter<InfiniteScroll>();
 
   private observer!: IntersectionObserver;
-  private loading = false;
+  public loading = false;
 
   ngAfterViewInit() {
     this.observer = new IntersectionObserver(
@@ -47,7 +49,14 @@ export class InfiniteScroll implements AfterViewInit, OnDestroy {
       }
     });
   }
-
+  checkAnchor() {
+    if (!this.anchor) return;
+    const rect = this.anchor.nativeElement.getBoundingClientRect();
+    if (rect.top < window.innerHeight + 200 && !this.loading) {
+      this.loading = true;
+      this.loadMore.emit(this);
+    }
+  }
   done() {
     // parent hívja amikor kész a load
     this.loading = false;

@@ -1,4 +1,4 @@
-import { Component, effect, inject, OnInit, untracked } from '@angular/core';
+import { Component, effect, inject, OnInit, signal, untracked, ViewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { IRecipeList } from '@recipe/shared';
@@ -13,6 +13,7 @@ import { RecipeFilter } from '../../../features/recipes/components/recipe-filter
 import { RecipeStore } from '../../../features/recipes/stores/recipe.store';
 import { MyRecipeCard } from '../../../features/recipes/components/my-recipe-card/my-recipe-card';
 import { Spinner } from '../../../components/spinner/spinner';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-recipes',
@@ -21,16 +22,22 @@ import { Spinner } from '../../../components/spinner/spinner';
   styleUrl: './recipes.scss',
 })
 export class Recipes implements OnInit {
+  @ViewChild(InfiniteScroll) inf!: InfiniteScroll;
   public authService = inject(AuthService);
   public recipeStore = inject(RecipeStore);
 
   isShowDeleteConfirm = false;
   selectedRecipe: IRecipeList | null = null;
-
-  constructor() {
-    this.recipeStore.getOwnRecipes();
+  loadingSubscription$ = toObservable(this.recipeStore.isLoading).subscribe((loading) => {
+    const allLoaded = this.recipeStore.recipes().length >= this.recipeStore.total();
+    if (!loading && !allLoaded && this.inf && !this.inf.loading) {
+      requestAnimationFrame(() => this.inf.checkAnchor());
+    }
+  });
+  constructor() {}
+  ngOnInit(): void {
+    //this.recipeStore.loadNextOwn();
   }
-  ngOnInit(): void {}
 
   onImageError(event: Event) {
     const img = event.target as HTMLImageElement;
@@ -44,11 +51,10 @@ export class Recipes implements OnInit {
   }
 
   loadMore(inf: InfiniteScroll) {
-    this.loadNext();
+    this.recipeStore.loadNextOwn();
+    inf.done();
   }
-  loadNext() {
-    //this.recipeService.loadNext(this.searchString, this.categoryId, '', [], true);
-  }
+
   changeCategory(categoryId: string) {
     this.recipeStore.updateMyFilter({ categoryId });
   }

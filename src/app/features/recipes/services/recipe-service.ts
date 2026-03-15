@@ -64,10 +64,18 @@ export class RecipeService {
     );
   }
 
-  getOwnRecipes(search?: string, categoryId?: string, cuisineId?: string) {
+  getOwnRecipes(
+    search?: string,
+    categoryId?: string,
+    cuisineId?: string,
+    skip?: number,
+    take?: number,
+  ) {
     let params = new HttpParams();
     if (categoryId && categoryId != 'all') params = params.set('categoryId', String(categoryId));
     if (search) params = params.set('search', String(search));
+    if (skip) params = params.set('skip', 0);
+    if (take) params = params.set('take', 10);
     if (cuisineId && cuisineId !== 'all') params = params.set('cuisineId', String(cuisineId));
     return this.http.get<IRecipeListResponse>(environment.apiUrl + '/recipes/my', { params });
   }

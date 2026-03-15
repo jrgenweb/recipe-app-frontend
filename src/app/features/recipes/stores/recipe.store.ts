@@ -6,7 +6,7 @@ import {
   ICreateRecipe,
   IRecipeDetail,
 } from '@recipe/shared';
-import { debounceTime, finalize, Subject, tap } from 'rxjs';
+import { debounceTime, finalize, Subject, take, tap } from 'rxjs';
 import { FavoriteService } from '../services/favorite-service';
 import { ToastService } from '../../../shared/services/toast-service';
 import { IUpdateRecipe } from '../../../shared/interfaces/update-recipe.interface';
@@ -28,12 +28,14 @@ export class RecipeStore implements OnInit {
   private _myRecipes = signal<IRecipeListResponse>({ data: [], total: 0 });
   private _selectedRecipe = signal<IRecipeDetail | null>(null);
   private _loading = signal<boolean>(false);
+  private _myLoading = signal<boolean>(false);
   private _error = signal<string | null>(null);
 
   // --- Selectors (Publikus readonly jelek) ---
   readonly recipes = computed(() => this._recipes().data);
   readonly total = computed(() => this._recipes().total);
   readonly isLoading = computed(() => this._loading());
+  readonly isMyLoading = computed(() => this._myLoading());
   readonly favoriteRecipes = computed(() => this._favoriteRecipes().data);
   readonly favoriteRecipeIds = computed(() => this._favoriteRecipeIds());
   readonly selectedRecipe = computed(() => this._selectedRecipe());
@@ -56,20 +58,24 @@ export class RecipeStore implements OnInit {
 
   constructor() {
     this.filterChange$.pipe(debounceTime(300)).subscribe(() => {
+      this._recipes.set({ data: [], total: 0 });
       const { search, categoryId, cuisineId, ingredientIds } = this.filters();
       this.loadAll(search, categoryId, cuisineId, ingredientIds);
     });
 
     this.myFilterChange$.pipe(debounceTime(300)).subscribe(() => {
+      this._myRecipes.set({ data: [], total: 0 });
       const myFilters = this.myFilters();
       this.getOwnRecipes(myFilters.search, myFilters.categoryId, myFilters.cuisineId);
+      //this.loadNextOwn();
     });
 
     const isAuthenticated$ = toObservable(this.auth.isAuthenticated);
     isAuthenticated$.subscribe((state) => {
       if (state) {
         this.loadFavorites();
-        this.getOwnRecipes();
+        //this.getOwnRecipes();
+        this.loadNextOwn();
       }
     });
   }
@@ -80,11 +86,14 @@ export class RecipeStore implements OnInit {
   /** Kezdeti betöltés vagy keresés */
   loadAll(search?: string, categoryId?: string, cuisinId?: string, ingredientIds?: string[]) {
     this._loading.set(true);
-    this.recipeService.getRecipes(search, categoryId, cuisinId, ingredientIds).subscribe({
-      next: (resp) => this._recipes.set(resp),
-      error: (err) => this._error.set(err.message),
-      complete: () => this._loading.set(false),
-    });
+    this.recipeService
+      .fetchRecipes(search, categoryId, cuisinId, ingredientIds, 0, 10, false)
+      .pipe(take(1))
+      .subscribe({
+        next: (resp) => this._recipes.set(resp),
+        error: (err) => this._error.set(err.message),
+        complete: () => this._loading.set(false),
+      });
   }
 
   /** Végtelen görgetéshez (Infinite Scroll) */
@@ -95,7 +104,10 @@ export class RecipeStore implements OnInit {
     const { search, categoryId, cuisineId, ingredientIds } = this.filters();
     this.recipeService
       .fetchRecipes(search, categoryId, cuisineId, ingredientIds, skip, 10, false)
-      .pipe(finalize(() => this._loading.set(false)))
+      .pipe(
+        take(1),
+        finalize(() => this._loading.set(false)),
+      )
       .subscribe((resp) => {
         this._recipes.update((state) => ({
           data: [...state.data, ...resp.data],
@@ -105,14 +117,39 @@ export class RecipeStore implements OnInit {
   }
 
   getOwnRecipes(search?: string, categoryId?: string, cuisineId?: string) {
-    this._loading.set(true);
-    this.recipeService.getOwnRecipes(search, categoryId, cuisineId).subscribe({
-      next: (resp) => {
-        this._myRecipes.set(resp);
-      },
-      error: (err) => this._error.set(err.message),
-      complete: () => this._loading.set(false),
-    });
+    this._myLoading.set(true);
+    this.recipeService
+      .getOwnRecipes(search, categoryId, cuisineId)
+      .pipe(take(1))
+      .subscribe({
+        next: (resp) => {
+          this._myRecipes.set(resp);
+        },
+        error: (err) => this._error.set(err.message),
+        complete: () => this._myLoading.set(false),
+      });
+  }
+  loadNextOwn() {
+    if (
+      this._myLoading() ||
+      (this.myRecipes().length > 0 && this.myRecipes().length >= this._myRecipes().total)
+    )
+      return;
+    this._myLoading.set(true);
+    const skip = this.myRecipes().length;
+    const { search, categoryId, cuisineId } = this.myFilters();
+    this.recipeService
+      .fetchRecipes(search, categoryId, cuisineId, [], skip, 10, true)
+      .pipe(
+        take(1),
+        finalize(() => this._myLoading.set(false)),
+      )
+      .subscribe((resp) => {
+        this._myRecipes.update((state) => ({
+          data: [...state.data, ...resp.data],
+          total: resp.total,
+        }));
+      });
   }
 
   loadDetail(id: string) {
@@ -120,7 +157,10 @@ export class RecipeStore implements OnInit {
     this._selectedRecipe.set(null);
     this.recipeService
       .getRecipeDetail(id)
-      .pipe(finalize(() => this._loading.set(false)))
+      .pipe(
+        take(1),
+        finalize(() => this._loading.set(false)),
+      )
       .subscribe({
         next: (res) => {
           this._selectedRecipe.set(res);
@@ -148,13 +188,16 @@ export class RecipeStore implements OnInit {
   /** Kedvencek betöltése (például alkalmazás indításakor vagy login után) */
   loadFavorites() {
     this._loading.set(true);
-    this.favoriteService.getAll().subscribe({
-      next: (favs) => {
-        this._favoriteRecipes.set(favs);
-        this._favoriteRecipeIds.set(favs.data.map((r) => r.recipeId));
-      },
-      complete: () => this._loading.set(false),
-    });
+    this.favoriteService
+      .getAll()
+      .pipe(take(1))
+      .subscribe({
+        next: (favs) => {
+          this._favoriteRecipes.set(favs);
+          this._favoriteRecipeIds.set(favs.data.map((r) => r.recipeId));
+        },
+        complete: () => this._loading.set(false),
+      });
   }
 
   /** Kedvenc állapot váltása (Add/Remove) */
@@ -170,16 +213,19 @@ export class RecipeStore implements OnInit {
         total: state.total - 1,
       }));
 
-      this.favoriteService.delete(recipeId).subscribe({
-        error: () => {
-          // rollback
-          this._favoriteRecipeIds.update((ids) => [...ids, recipeId]);
-          this._favoriteRecipes.update((state) => ({
-            data: [...state.data.filter((f) => f.recipeId !== recipeId)], // minimal rollback
-            total: state.total + 1,
-          }));
-        },
-      });
+      this.favoriteService
+        .delete(recipeId)
+        .pipe(take(1))
+        .subscribe({
+          error: () => {
+            // rollback
+            this._favoriteRecipeIds.update((ids) => [...ids, recipeId]);
+            this._favoriteRecipes.update((state) => ({
+              data: [...state.data.filter((f) => f.recipeId !== recipeId)], // minimal rollback
+              total: state.total + 1,
+            }));
+          },
+        });
     } else {
       // Hozzáadás
       this._favoriteRecipeIds.update((ids) => [...ids, recipeId]);
@@ -203,16 +249,19 @@ export class RecipeStore implements OnInit {
         }));
       }
 
-      this.favoriteService.set(recipeId).subscribe({
-        error: () => {
-          // rollback
-          this._favoriteRecipeIds.update((ids) => ids.filter((id) => id !== recipeId));
-          this._favoriteRecipes.update((state) => ({
-            data: state.data.filter((f) => f.recipeId !== recipeId),
-            total: state.total - 1,
-          }));
-        },
-      });
+      this.favoriteService
+        .set(recipeId)
+        .pipe(take(1))
+        .subscribe({
+          error: () => {
+            // rollback
+            this._favoriteRecipeIds.update((ids) => ids.filter((id) => id !== recipeId));
+            this._favoriteRecipes.update((state) => ({
+              data: state.data.filter((f) => f.recipeId !== recipeId),
+              total: state.total - 1,
+            }));
+          },
+        });
     }
   }
 
@@ -241,35 +290,48 @@ export class RecipeStore implements OnInit {
   }
 
   create(recipe: ICreateRecipe) {
-    this.recipeService.create(recipe).subscribe((resp) => {
-      this._recipes.update((state) => ({
-        data: [...state.data, resp], // itt megkell nézni az interface-t
-        total: state.total + 1,
-      }));
-      this.toastService.add({ message: 'Sikeresen hozzáadtad a receptet', type: 'success' });
-    });
+    this.recipeService
+      .create(recipe)
+      .pipe(take(1))
+      .subscribe((resp) => {
+        this._recipes.update((state) => ({
+          data: [...state.data, resp], // itt megkell nézni az interface-t
+          total: state.total + 1,
+        }));
+        this.toastService.add({ message: 'Sikeresen hozzáadtad a receptet', type: 'success' });
+      });
   }
   update(recipeId: string, recipe: IUpdateRecipe) {
-    this.recipeService.update(recipeId, recipe).subscribe(() => {
-      this.toastService.add({ message: 'Sikeresen szerkesztetted a receptet', type: 'success' });
-    });
+    this.recipeService
+      .update(recipeId, recipe)
+      .pipe(take(1))
+      .subscribe(() => {
+        this.toastService.add({ message: 'Sikeresen szerkesztetted a receptet', type: 'success' });
+      });
   }
 
   /** Törlés a listából */
   removeRecipe(id: string) {
-    this.recipeService.delete(id).subscribe((resp) => {
-      if (resp.deleted && resp.deleted === true) {
-        this._recipes.update((state) => ({
-          data: state.data.filter((r) => r.id !== id),
-          total: state.total - 1,
-        }));
-        this.toastService.add({ message: 'Sikeresen törölted a receptet', type: 'success' });
-      } else {
-        this.toastService.add({ message: 'Hiba a recept törlésekor ', type: 'danger' });
-      }
-    });
+    this.recipeService
+      .delete(id)
+      .pipe(take(1))
+      .subscribe((resp) => {
+        if (resp.deleted && resp.deleted === true) {
+          this._recipes.update((state) => ({
+            data: state.data.filter((r) => r.id !== id),
+            total: state.total - 1,
+          }));
+          this.toastService.add({ message: 'Sikeresen törölted a receptet', type: 'success' });
+        } else {
+          this.toastService.add({ message: 'Hiba a recept törlésekor ', type: 'danger' });
+        }
+      });
   }
 
+  myReset() {
+    this._myRecipes.set({ data: [], total: 0 });
+    this._myLoading.set(false);
+  }
   reset() {
     this._recipes.set({ data: [], total: 0 });
     this._loading.set(false);

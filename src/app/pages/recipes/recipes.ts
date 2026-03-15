@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
 
 import { IRecipeIngredient } from '@recipe/shared';
 
@@ -9,7 +9,6 @@ import { SelectIngredient } from '../../features/recipes/components/select-ingre
 import { RecipeStore } from '../../features/recipes/stores/recipe.store';
 import { Spinner } from '../../components/spinner/spinner';
 import { toObservable } from '@angular/core/rxjs-interop';
-import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-recipes',
@@ -17,25 +16,21 @@ import { filter } from 'rxjs';
   templateUrl: './recipes.html',
   styleUrl: './recipes.scss',
 })
-export class Recipes implements OnInit {
+export class Recipes implements OnInit, OnDestroy {
+  @ViewChild(InfiniteScroll) inf!: InfiniteScroll;
   public recipeStore = inject(RecipeStore);
-
   ingredientIds = signal<string[]>([]);
 
-  filterChanged = signal(false);
-  recipeLoading = toObservable(this.recipeStore.isLoading);
+  loadingSubscription$ = toObservable(this.recipeStore.isLoading).subscribe((loading) => {
+    const allLoaded = this.recipeStore.recipes().length >= this.recipeStore.total();
+    if (!loading && !allLoaded && this.inf && !this.inf.loading) {
+      requestAnimationFrame(() => this.inf.checkAnchor());
+    }
+  });
 
-  constructor() {
-    this.recipeLoading.subscribe((loading) => {
-      if (!loading) {
-        this.filterChanged.set(false);
-      }
-    });
-  }
+  constructor() {}
 
-  ngOnInit(): void {
-    this.recipeStore.loadNext();
-  }
+  ngOnInit(): void {}
 
   loadMore(inf: InfiniteScroll) {
     this.recipeStore.loadNext();
@@ -43,23 +38,23 @@ export class Recipes implements OnInit {
   }
 
   changeCategory(categoryId: string) {
-    this.filterChanged.set(true);
     this.recipeStore.updateFilters({ categoryId });
   }
 
   changeCuisin(cuisineId: string) {
-    this.filterChanged.set(true);
     this.recipeStore.updateFilters({ cuisineId });
   }
 
   changeSearchString(search: string) {
-    this.filterChanged.set(true);
     this.recipeStore.updateFilters({ search });
   }
 
   onChangeIngredient(ingredients: IRecipeIngredient[]) {
     const ingredientIds = ingredients.map((i) => i.id);
-    this.filterChanged.set(true);
+
     this.recipeStore.updateFilters({ ingredientIds });
+  }
+  ngOnDestroy(): void {
+    this.loadingSubscription$.unsubscribe();
   }
 }
