@@ -30,7 +30,9 @@ export class Recipes implements OnInit, OnDestroy {
 
   constructor() {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    //this.recipeStore.loadNext();
+  }
 
   loadMore(inf: InfiniteScroll) {
     this.recipeStore.loadNext();

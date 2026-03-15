@@ -5,7 +5,6 @@ import { ISelect, Select, TSelect } from '../select/select';
 
 import { CategoryStore } from '../../../categories/store/category.store';
 import { CuisineStore } from '../../../cuisines/stores/cuisine.store';
-import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-recipe-filter',
@@ -20,10 +19,20 @@ export class RecipeFilter implements OnInit {
 
   searchString: string = '';
 
-  selectedCategory!: ISelect;
-  selectedCuisin!: ISelect;
   public categoryStore: CategoryStore = inject(CategoryStore);
   public cuisineStore: CuisineStore = inject(CuisineStore);
+  selectedCategory: ISelect = this.categoryStore.selectedCategory()
+    ? {
+        value: this.categoryStore.selectedCategory()!.id!,
+        label: this.categoryStore.selectedCategory()!.name,
+      }
+    : { value: 'all', label: 'Összes' };
+  selectedCuisin: ISelect = this.cuisineStore.selectedCuisine()
+    ? {
+        value: this.cuisineStore.selectedCuisine()!.id!,
+        label: this.cuisineStore.selectedCuisine()!.name,
+      }
+    : { value: 'all', label: 'Összes' };
   categorySelectItems = computed(() =>
     this.categoryStore.categories().map((c) => ({ value: c.id, label: c.name })),
   );
@@ -38,10 +47,16 @@ export class RecipeFilter implements OnInit {
 
   onCategoryChange(selected: TSelect) {
     selected = Array.isArray(selected) ? selected : [selected];
+    this.categoryStore.addSelected(
+      this.categoryStore.categories().find((c) => c.id === selected[0].value)!,
+    );
     this.changeCategoryIdEvt.emit(String(selected[0].value) || '');
   }
   onCuisinChange(selected: TSelect) {
     selected = Array.isArray(selected) ? selected : [selected];
+    this.cuisineStore.addSelected(
+      this.cuisineStore.cuisines().find((c) => c.id === selected[0].value)!,
+    );
     this.changeCusinIdEvt.emit(String(selected[0].value) || '');
   }
   onSearchStringChange() {

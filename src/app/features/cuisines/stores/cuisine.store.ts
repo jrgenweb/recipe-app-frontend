@@ -11,6 +11,7 @@ export class CuisineStore {
 
   // --- State ---
   private _cuisines = signal<{ data: ICuisin[]; total: number }>({ data: [], total: 0 });
+  private _selectedCuisine = signal<ICuisin | null>(null);
 
   // --- Selectors ---
 
@@ -19,6 +20,7 @@ export class CuisineStore {
 
   // --- Selectors (Publikus readonly jelek) ---
   readonly cuisines = computed(() => this._cuisines().data);
+  readonly selectedCuisine = computed(() => this._selectedCuisine());
   readonly total = computed(() => this._cuisines().total);
   readonly isLoading = computed(() => this._loading());
 
@@ -52,6 +54,12 @@ export class CuisineStore {
           total: resp.total,
         }));
       });
+  }
+  addSelected(cuisine: ICuisin) {
+    this._selectedCuisine.set(cuisine);
+  }
+  removeSelected() {
+    this._selectedCuisine.set(null);
   }
 
   reset() {

@@ -13,7 +13,7 @@ export class Favorites implements OnInit {
   public recipeStore: RecipeStore = inject(RecipeStore);
   constructor() {}
   ngOnInit(): void {
-    this.recipeStore.loadAll();
+    //this.recipeStore.loadAll();
   }
   setFavorite(favorite: { recipeId: string; state: boolean }) {
     this.recipeStore.toggleFavorite(favorite.recipeId);

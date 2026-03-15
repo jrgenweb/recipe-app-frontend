@@ -1,15 +1,10 @@
 import { inject, Injectable, signal, computed } from '@angular/core';
 
-import {
-  IRecipeListResponse,
-  IRecipeFavoriteResponse,
-  ICreateRecipe,
-  IRecipeCategoryResponse,
-} from '@recipe/shared';
-import { finalize, tap } from 'rxjs';
+import { IRecipeCategoryResponse, IRecipeCategory } from '@recipe/shared';
+import { finalize } from 'rxjs';
 
 import { ToastService } from '../../../shared/services/toast-service';
-import { IUpdateRecipe } from '../../../shared/interfaces/update-recipe.interface';
+
 import { CategoryService } from '../services/category-service';
 
 @Injectable({ providedIn: 'root' })
@@ -19,7 +14,7 @@ export class CategoryStore {
 
   // --- State ---
   private _categories = signal<IRecipeCategoryResponse>({ data: [], total: 0 });
-
+  private _selectedCategory = signal<IRecipeCategory | null>(null);
   // --- Selectors ---
 
   private _loading = signal<boolean>(false);
@@ -27,6 +22,7 @@ export class CategoryStore {
 
   // --- Selectors (Publikus readonly jelek) ---
   readonly categories = computed(() => this._categories().data);
+  readonly selectedCategory = computed(() => this._selectedCategory());
   readonly total = computed(() => this._categories().total);
   readonly isLoading = computed(() => this._loading());
 
@@ -61,7 +57,12 @@ export class CategoryStore {
         }));
       });
   }
-
+  addSelected(category: IRecipeCategory) {
+    this._selectedCategory.set(category);
+  }
+  removeSelected() {
+    this._selectedCategory.set(null);
+  }
   reset() {
     this._categories.set({ data: [], total: 0 });
     this._loading.set(false);
