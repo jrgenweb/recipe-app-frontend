@@ -26,28 +26,25 @@ export class SelectIngredient {
   @ViewChild('selectIngredientEl') selectIngredientEl!: ElementRef;
   @Output() ingredientChanged = new EventEmitter<IRecipeIngredient[]>();
 
-  private ingredientStore = inject(IngredientStore);
+  public ingredientStore = inject(IngredientStore);
 
   // 🔥 HTTP → signal (auto unsubscribe)
   //ingredients = toSignal(this.ingredientService.ingredients$, { initialValue: [] });
 
-  selectedIngredients = signal<IRecipeIngredient[]>([]);
   searchString = signal('');
+
   isShow = signal(false);
 
-  //searchLower = computed(() => this.searchString().toLocaleLowerCase());
-
   constructor() {
-    this.ingredientStore.loadAll();
     effect(() => {
-      //const search = this.searchLower();
       const search = this.searchString();
+
       this.ingredientStore.updateFilter(search);
     });
   }
 
   viewModel = computed(() => {
-    const selectedIds = new Set(this.selectedIngredients().map((s) => s.id));
+    const selectedIds = new Set(this.ingredientStore.selectedIngredients().map((s) => s.id));
     const ingredients = this.ingredientStore.ingredients();
 
     return {
@@ -63,32 +60,36 @@ export class SelectIngredient {
     this.ingredientService.loadNext();
   } */
   onAdd(ingredient: IRecipeIngredient) {
-    this.selectedIngredients.update((list) => [...list, ingredient]);
+    this.ingredientStore.addSelected(ingredient);
     this.searchString.set('');
     this.isShow.set(false);
     this.emit();
   }
 
   onRemove(id: string) {
-    this.selectedIngredients.update((list) => list.filter((i) => i.id !== id));
+    this.ingredientStore.removeSelected(id);
     this.emit();
   }
 
   handleBackspace() {
-    if (!this.searchString() && this.selectedIngredients().length) {
-      this.selectedIngredients.update((list) => list.slice(0, -1));
+    if (!this.searchString() && this.ingredientStore.selectedIngredients().length) {
+      this.ingredientStore.removeSelected(
+        this.ingredientStore.selectedIngredients()[
+          this.ingredientStore.selectedIngredients().length - 1
+        ].id,
+      );
       this.emit();
     }
   }
 
   clear() {
     this.searchString.set('');
-    this.selectedIngredients.set([]);
+    this.ingredientStore.resetSelected();
     this.emit();
   }
 
   private emit() {
-    this.ingredientChanged.emit(this.selectedIngredients());
+    this.ingredientChanged.emit(this.ingredientStore.selectedIngredients());
   }
 
   @HostListener('document:click', ['$event'])

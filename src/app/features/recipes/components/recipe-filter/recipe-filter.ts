@@ -22,7 +22,8 @@ export class RecipeFilter implements OnInit {
 
   selectedCategory!: ISelect;
   selectedCuisin!: ISelect;
-
+  public categoryStore: CategoryStore = inject(CategoryStore);
+  public cuisineStore: CuisineStore = inject(CuisineStore);
   categorySelectItems = computed(() =>
     this.categoryStore.categories().map((c) => ({ value: c.id, label: c.name })),
   );
@@ -30,15 +31,10 @@ export class RecipeFilter implements OnInit {
   cuisinSelectItems = computed(() =>
     this.cuisineStore.cuisines().map((c) => ({ value: c.id!, label: c.name })),
   );
-  public categoryStore: CategoryStore = inject(CategoryStore);
-  public cuisineStore: CuisineStore = inject(CuisineStore);
 
   constructor() {}
 
-  ngOnInit(): void {
-    this.categoryStore.loadAll();
-    this.cuisineStore.loadAll();
-  }
+  ngOnInit(): void {}
 
   onCategoryChange(selected: TSelect) {
     selected = Array.isArray(selected) ? selected : [selected];

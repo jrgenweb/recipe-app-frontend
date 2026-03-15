@@ -1,9 +1,10 @@
 import { inject, Injectable, signal, computed } from '@angular/core';
 
 import { IRecipeIngredient } from '@recipe/shared';
-import { debounceTime, Subject } from 'rxjs';
+import { debounceTime, Subject, take } from 'rxjs';
 import { IngredientService } from '../services/ingredient.service';
 import { ToastService } from '../../../shared/services/toast-service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Injectable({ providedIn: 'root' })
 export class IngredientStore {
@@ -15,6 +16,7 @@ export class IngredientStore {
     data: [],
     total: 0,
   });
+  private _selectedIngredients = signal<IRecipeIngredient[]>([]);
 
   // --- Selectors ---
 
@@ -23,6 +25,7 @@ export class IngredientStore {
 
   // --- Selectors (Publikus readonly jelek) ---
   readonly ingredients = computed(() => this._ingredients().data);
+  readonly selectedIngredients = computed(() => this._selectedIngredients());
   readonly total = computed(() => this._ingredients().total);
   readonly isLoading = computed(() => this._loading());
   readonly filters = signal({ name: '' });
@@ -30,7 +33,7 @@ export class IngredientStore {
   private filterChange$ = new Subject<void>();
 
   constructor() {
-    this.filterChange$.pipe(debounceTime(300)).subscribe(() => {
+    this.filterChange$.pipe(debounceTime(300), takeUntilDestroyed()).subscribe(() => {
       const { name } = this.filters();
       this.loadAll(name);
     });
@@ -52,10 +55,19 @@ export class IngredientStore {
   }
 
   updateFilter(name: string) {
-    this.filters.update((state) => ({ ...state, name }));
+    this.filters.update((state) => ({ ...state, name: name.toLowerCase() }));
     this.filterChange$.next();
   }
 
+  addSelected(ingredient: IRecipeIngredient) {
+    this._selectedIngredients.update((list) => [...list, ingredient]);
+  }
+  removeSelected(ingredientId: string) {
+    this._selectedIngredients.update((list) => list.filter((i) => i.id !== ingredientId));
+  }
+  resetSelected() {
+    this._selectedIngredients.set([]);
+  }
   reset() {
     this._ingredients.set({ data: [], total: 0 });
     this._loading.set(false);

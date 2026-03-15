@@ -1,6 +1,6 @@
 <div class="position-relative" #selectIngredientEl>
   <div class="form-control d-flex flex-wrap gap-1 align-items-center form-control-lg">
-    @for (si of selectedIngredients(); track si.id) {
+    @for (si of ingredientStore.selectedIngredients(); track si.id) {
       <span class="badge text-bg-success">
         {{ si.name }}
         <i class="bi bi-x ms-1 pointer" (click)="onRemove(si.id)"></i>
