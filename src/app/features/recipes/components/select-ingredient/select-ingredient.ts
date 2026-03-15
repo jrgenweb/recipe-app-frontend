@@ -16,11 +16,13 @@ import { IRecipeIngredient } from '@recipe/shared';
 
 import { InfiniteScroll } from '../../../../components/infinite-scroll/infinite-scroll';
 import { IngredientStore } from '../../../ingredients/stores/ingredient.store';
+import { Spinner } from '../../../../components/spinner/spinner';
 
 @Component({
   selector: 'app-select-ingredient',
   templateUrl: './select-ingredient.html',
   styleUrl: './select-ingredient.scss',
+  imports: [Spinner],
 })
 export class SelectIngredient {
   @ViewChild('selectIngredientEl') selectIngredientEl!: ElementRef;
@@ -49,6 +51,7 @@ export class SelectIngredient {
 
     return {
       ingredients,
+      loading: this.ingredientStore.isLoading(),
       hasResults: ingredients.length > 0,
       hasSearch: this.searchString().length > 0,
       hasSelected: selectedIds.size > 0,
